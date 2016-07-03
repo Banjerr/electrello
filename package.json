@@ -27,23 +27,22 @@
     "electron-prebuilt": "^1.2.0",
     "grunt": "^0.4.5",
     "grunt-contrib-sass": "^0.9.2",
-    "grunt-contrib-watch": "^0.6.1"
+    "grunt-contrib-watch": "^0.6.1",
+    "coffee-script": "^1.10.0",
+    "node.normalize.scss": "^3.0.3"
   },
   "dependencies": {
     "angular": "^1.5.7",
     "angular-animate": "^1.5.7",
     "angular-aria": "^1.5.7",
     "angular-material": "^1.1.0-rc.5",
-    "coffee-script": "^1.10.0",
-    "electron-window-manager": "^1.0.1",
+    "angular-messages": "^1.5.7",
     "file-sync": "^0.0.2",
     "jquery": "^3.0.0",
     "lodash": "^4.13.1",
     "lowdb": "^0.13.1",
     "node-trello": "^1.1.2",
-    "node.normalize.scss": "^3.0.3",
     "remote": "^0.2.6",
-    "request": "^2.72.0",
-    "trello": "^0.5.1"
+    "request": "^2.72.0"
   }
 }

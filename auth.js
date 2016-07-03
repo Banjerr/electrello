@@ -64,7 +64,7 @@
         db.get('access_token').push({
           access_token: accessToken
         }).value();
-        return db.get('profile_data').push({
+        db.get('profile_data').push({
           profile_data: bio_data
         }).value();
       });

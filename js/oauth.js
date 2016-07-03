@@ -54,5 +54,10 @@ function handleCallback (newURL, originalURL, httpResponseCode, requestMethod, e
   // if the httpResponseCode matches the regex, kill the screen
   if (/^http:\/\/127\.0\.0\.1/.test(httpResponseCode)) {
       authWindow.destroy();
+
+      // if we have the access_token, remove the auth buttons
+      var authorize_btn_parent = document.getElementById('auth_section');
+      var authorize_btn = document.getElementById('auth_btn');
+      authorize_btn_parent.removeChild(authorize_btn)
   }
 }
