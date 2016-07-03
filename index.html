@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Electrello</title>
   </head>
-  <body>
+  <body ng-app="electrello">
     <h1>Electrello</h1>
     <button type="button" onclick="oAuthTokenRequest();" name="button">Auth</button>
   </body>
@@ -13,5 +13,8 @@
     // You can also require other files to run in this process
     //require('./renderer.js')
   </script>
+  <script>window.$ = window.jQuery = require('./js/jquery.min.js');</script>
+  <script src="js/oAuth.js"></script>
+  <script src="auth.js"></script>  
   <script src="renderer.js"></script>
 </html>

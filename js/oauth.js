@@ -1,8 +1,4 @@
 'use strict'
-
-// need this to build the post string for the access_token
-var request = require('request')
-
 // stuff to build window
 const electron = require('electron')
 // Module to control application life.
@@ -14,8 +10,7 @@ const {BrowserWindow} = require('electron').remote;
 // db stuff
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
-const db = low('auth.json');
-db.defaults({ access_token: [] }).value()
+var db = low('auth.json');
 
 // Trello stuff
 var Trello = require("node-trello");
@@ -24,7 +19,8 @@ var Trello = require("node-trello");
 // be closed automatically when the JavaScript object is garbage collected.
 let authWindow;
 
-var authUrl = '127.0.0.1:6080/login';
+// this URL is set up by the node server we started up
+var authUrl = 'http://127.0.0.1:6080/login';
 
 var oAuthTokenRequest = function()
 {
@@ -39,51 +35,24 @@ var oAuthTokenRequest = function()
       frame: false
     });
 
-    // call the handleCallback function
-    authWindow.webContents.on('will-navigate', function (event, url)
+    // call the handleCallback function when we get response details back
+    authWindow.webContents.on('did-get-response-details', function (originalURL, httpResponseCode, requestMethod, event, resourceType, newURL, referrer)
     {
-      handleCallback(url);
-    });
-
-    // call the handleCallback function
-    authWindow.webContents.on('did-get-response-details', function (event, url, headers, httpResponseCode)
-    {
-      handleCallback(event, url, headers, httpResponseCode);
-    });
-
-    // call the handleCallback function
-    authWindow.webContents.on('did-get-redirect-request', function (event, url)
-    {
-      handleCallback(url);
+      handleCallback(originalURL, httpResponseCode, requestMethod, event, resourceType, newURL, referrer);
     });
 
     // open the Trello auth page
-    authWindow.loadURL('http://127.0.0.1:6080/login');
+    authWindow.loadURL(authUrl);
 }
 
-function handleCallback (event, url, headers, httpResponseCode)
+// this is fired when electron gets response data
+function handleCallback (newURL, originalURL, httpResponseCode, requestMethod, event, resourceType, referrer)
 {
-  var raw_code = /oauth_token=([^&]*)/.exec(headers) || null;
+  var raw_code = /oauth_token=([^&]*)/.exec(httpResponseCode) || null;
   var code = (raw_code && raw_code.length > 1) ? raw_code[1] : null;
-  var error = /\?error=(.+)$/.exec(url);
 
-  if (code || error) {
+  // if the httpResponseCode matches the regex, kill the screen
+  if (/^http:\/\/127\.0\.0\.1/.test(httpResponseCode)) {
       authWindow.destroy();
   }
-
-  // If there is a code, proceed to get token from IS
-  if (code) {
-      console.log(code);
-
-       db.get('access_token').push({
-           access_token: code
-       }).value();
-    }
-    if (error)
-    {
-        console.log('somethin goofed');
-        console.log(error);
-        alert('Oops! Something went wrong and we couldn\'t' +
-        'log you into Trello. Please try again.');
-    }
 }
