@@ -1,33 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="electrello" ng-cloak>
   <head>
     <meta charset="UTF-8">
     <title>Electrello</title>
     <link rel="stylesheet" href="node_modules/angular-material/angular-material.css" media="screen" title="no title" charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Bitter" rel="stylesheet">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
+    <link rel="stylesheet" href="styles/styles.css" charset="utf-8">
   </head>
-  <body ng-app="electrello">
-    <h1>Electrello</h1>
-
-    <section id="auth_section" ng-controller="ProfileController">
-        <button type="button" onclick="oAuthTokenRequest()" id="auth_btn">Auth</button>
-
-        <button type="button" ng-click="delete_token" id="delete_token_btn">Delete Token</button>
-    </section>
-
-  </body>
-  <script src="./js/oAuth.js"></script>
-  <script src="./auth.js"></script>
+  <body ng-view class="{{ pageClass }}"></body>
   <script>
     // weird way of including jquery
-    window.$ = window.jQuery = require('./js/jquery.min.js')
+    window.$ = window.jQuery = require('./js/jquery.min.js');
     // angular stuff
-    require('./node_modules/angular/angular.js')
-    require('./node_modules/angular-material/angular-material.js')
-    require('./node_modules/angular-messages/angular-messages.js')
-    require('./node_modules/angular-animate/angular-animate.js')
-    require('./node_modules/angular-aria/angular-aria.js')
-
+    require('./node_modules/angular/angular.js');
+    require('./node_modules/angular-material/angular-material.js');
+    require('./node_modules/angular-messages/angular-messages.js');
+    require('./node_modules/angular-animate/angular-animate.js');
+    require('./node_modules/angular-aria/angular-aria.js');
+    require('./node_modules/angular-route/angular-route.js');
     // app stuff
-    require('./renderer.js')
+    require('./renderer.js');
   </script>
 </html>
