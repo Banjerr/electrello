@@ -36,6 +36,12 @@ var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRo
     .accentPalette('yellow', {'default':'500'});
 });
 
+// set up some font icons
+electrello.config(function($mdIconProvider) {
+    $mdIconProvider
+      .defaultIconSet('images/mdi.svg');
+});
+
 // route controller
 electrello.config(function($routeProvider) {
     $routeProvider
@@ -81,9 +87,16 @@ var BoardController = function() {
 
 }
 
-electrello.controller('DashboardController', function($scope, $route, $routeParams, $location){
+electrello.controller('DashboardController', function($scope, $route, $routeParams, $location, $mdDialog){
     // set the body class
     $scope.pageClass = 'dashboard';
+
+    // handle the menu
+    var originatorEv;
+    $scope.openMenu = function($mdOpenMenu, ev) {
+      originatorEv = ev;
+      $mdOpenMenu(ev);
+    };
 
     // delete the tokens
     $scope.delete_token = function() {
