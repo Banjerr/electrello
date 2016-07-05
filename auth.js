@@ -46,7 +46,7 @@
       return function(error, token, tokenSecret, results) {
         oauth_secrets[token] = tokenSecret;
         res.writeHead(302, {
-          'Location': authorizeURL + "?oauth_token=" + token + "&name=" + appName + "&expiration=never"
+          'Location': authorizeURL + "?oauth_token=" + token + "&name=" + appName + "&expiration=never&scope=read,write"
         });
         return res.end();
       };

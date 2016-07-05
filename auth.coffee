@@ -32,7 +32,7 @@ oauth = new OAuth(requestURL, accessURL, key, secret, "1.0", loginCallback, "HMA
 login = (req, res) ->
   oauth.getOAuthRequestToken (error, token, tokenSecret, results) =>
     oauth_secrets[token] = tokenSecret
-    res.writeHead(302, { 'Location': "#{authorizeURL}?oauth_token=#{token}&name=#{appName}&expiration=never" })
+    res.writeHead(302, { 'Location': "#{authorizeURL}?oauth_token=#{token}&name=#{appName}&expiration=never&scope=read,write" })
     res.end()
 
 cb = (req, res) ->

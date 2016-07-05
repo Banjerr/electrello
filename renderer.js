@@ -12,9 +12,6 @@ const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
 var db = low('auth.json');
 
-// Trello stuff
-var Trello = require("node-trello");
-
 // we need this to build the requests
 var request = require('request')
 
@@ -28,6 +25,10 @@ if(hasAccessToken > 0){
     var access_token = db.get('access_token').take(1).value();
     var trelloToken = access_token[0].access_token;
 }
+
+// Trello stuff
+var Trello = require("node-trello");
+var t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
 // Define the electrello app module
 var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute']).config(function($mdThemingProvider) {
@@ -96,14 +97,27 @@ electrello.config(function($routeProvider) {
     });
 });
 
-// board controller
-electrello.controller('BoardController', function($scope, $rootScope, $route, $location, $window){
+// dashboard controller
+electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window){
     // set the body class
-    $rootScope.pageClass = 'board';
+    $rootScope.pageClass = 'dashboard';
+
+    // pass the profile info to the view
+    var board_data = db.get('profile_data').take(1).value();
+    $scope.boardIDs = board_data[0].profile_data.idBoards;
+
+    // get board data
+    $scope.get_board_data = function(boardID) {
+        t.get("/1/boards/" + boardID, function(err, data) {
+          if (err) throw err;
+          $scope.board_data = data;
+        });
+    }
+
 });
 
-// dashboard controller
-electrello.controller('DashboardController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+// menu controller
+electrello.controller('MenuController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
     // set the body class
     $rootScope.pageClass = 'dashboard';
 
@@ -167,10 +181,6 @@ electrello.controller('ProfileController', function ($scope) {
     // pass the profile info to the view
     var data = db.get('profile_data').take(1).value();
     $scope.profile_data = data[0].profile_data;
-
-    var show_profile_data = function() {
-
-    }
 });
 
 // Keep a global reference of the window object, if you don't, the window will

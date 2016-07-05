@@ -1,3 +1,7 @@
-<article class="dashboard">
-
+<article class="dashboard" ng-controller="DashboardController">
+    <ul ng-repeat="boardID in boardIDs">
+        <li>{{ boardID }}</li>
+        <md-button class="md-raised" ng-click="get_board_data(boardID)">Get Board Data</md-button>
+    </ul>
+    {{ board_data }}
 </article>
