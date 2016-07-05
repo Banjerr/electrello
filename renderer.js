@@ -77,19 +77,35 @@ electrello.config(function($routeProvider) {
                 }
             }
         }
+    })
+    .when('/profile', {
+        templateUrl : 'views/profile.html',
+        controller  : 'DashboardController',
+        resolve : {
+            "check" : function($location) {
+                // if they've got an access token we're good
+                if(hasAccessToken < 0) {
+                    // Send em home to authorize
+                    $location.path('/');
+                } else {
+                    // redirect user to dashboard
+                    $location.path('/profile');
+                }
+            }
+        }
     });
 });
 
 // board controller
-electrello.controller('BoardController', BoardController);
-
-var BoardController = function() {
-
-}
-
-electrello.controller('DashboardController', function($scope, $route, $routeParams, $location, $mdDialog){
+electrello.controller('BoardController', function($scope, $rootScope, $route, $location, $window){
     // set the body class
-    $scope.pageClass = 'dashboard';
+    $rootScope.pageClass = 'board';
+});
+
+// dashboard controller
+electrello.controller('DashboardController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+    // set the body class
+    $rootScope.pageClass = 'dashboard';
 
     // handle the menu
     var originatorEv;
@@ -98,11 +114,46 @@ electrello.controller('DashboardController', function($scope, $route, $routePara
       $mdOpenMenu(ev);
     };
 
+    // show the profile data we got upon authorization
+    $scope.show_profile = function() {
+        $rootScope.pageClass = 'dashboard profile';
+        $location.path('/profile');
+    }
+
+    // show the main dashboard
+    $scope.show_main_dashboard = function() {
+        $rootScope.pageClass = 'dashboard';
+        $location.path('/dashboard');
+    }
+
     // delete the tokens
     $scope.delete_token = function() {
       db.get('access_token').remove().value();
       console.log('deleted token');
     }
+
+    // warn em of impending deleting
+    $scope.showAlert = function(ev, alertType) {
+        var confirm = $mdDialog.confirm()
+            .parent(angular.element(document.querySelector('#popupContainer')))
+            .clickOutsideToClose(true)
+            .title('Are you absolutely sure about that?')
+            .textContent('Once this is done, there is no going back. Only re-syncing your data.')
+            .ariaLabel('Sure?')
+            .ok('Make It so!')
+            .cancel('Nevermind')
+            .targetEvent();
+
+        $mdDialog.show(confirm).then(function() {
+          if(alertType === 'profile'){
+              $scope.delete_profile_data();
+          } else if (alertType === 'token') {
+              $scope.delete_token();
+          }
+        }, function() {
+          console.log('changed your mind, eh?');
+        });
+    };
 
     // delete profile data
     $scope.delete_profile_data = function() {
@@ -112,34 +163,15 @@ electrello.controller('DashboardController', function($scope, $route, $routePara
 });
 
 // profile data controller
-electrello.controller('ProfileController', ['$scope', function ($scope) {
-    if(hasAccessToken > 0){
-        $scope.get_profile_data = function(){
-            // make a get request to get user info
-            request.get({
-                url: 'https://api.trello.com/1/members/me?fields=username,fullName,url&boards=all&board_fields=name&organizations=all&organization_fields=displayName&key=f4c23306bf38a3ec4ca351f999ee05d3&token=' + trelloToken
-                },
-                    function (error, response, body)
-                    {
-                        if (!error && response.statusCode == 200)
-                        {
-                            console.log(body);
-                            bio_data = JSON.parse(body);
-                            db.get('profile_data').push({
-                              profile_data: bio_data
-                            }).value();
-                        }
+electrello.controller('ProfileController', function ($scope) {
+    // pass the profile info to the view
+    var data = db.get('profile_data').take(1).value();
+    $scope.profile_data = data[0].profile_data;
 
-                        if (error)
-                        {
-                            console.log('somethin goofed');
-                            console.log(error);
-                        }
-                    }
-            );
-        }
+    var show_profile_data = function() {
+
     }
-}]);
+});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -149,9 +181,9 @@ let authWindow;
 const authUrl = 'http://127.0.0.1:6080/login';
 
 // authorization stuffs
-electrello.controller('AuthController', function($scope, $location, $route, $routeParams, $window){
+electrello.controller('AuthController', function($scope, $location, $route, $routeParams, $window, $rootScope){
     // set the body class
-    $scope.pageClass = 'authorize';
+    $rootScope.pageClass = 'authorize';
 
     // authorize their app
     $scope.oAuthTokenRequest = function()

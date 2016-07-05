@@ -7,6 +7,31 @@
 }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ /* HEADER *
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+
+header {
+    text-align: center;
+    .profileSettings {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    h2 {
+        display: inline-block;
+        font-size: 16px;
+        margin: 1% 0;
+        vertical-align: middle;
+        md-icon {
+           display: inline-block;
+           height: 14px;
+           width: 14px;
+           vertical-align: middle;
+        }
+    }
+}
+
+/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  /* AUTHORIZE *
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 

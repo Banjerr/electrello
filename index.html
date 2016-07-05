@@ -8,7 +8,50 @@
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
     <link rel="stylesheet" href="styles/styles.css" charset="utf-8">
   </head>
-  <body ng-view class="{{ pageClass }}"></body>
+  <body class="{{ pageClass }}" id="popupContainer">
+      <header>
+          <section class="profileSettings" ng-controller="DashboardController">
+              <md-menu>
+                <md-button aria-label="Open menu" class="md-icon-button" ng-click="openMenu($mdOpenMenu, $event)">
+                  <md-icon md-menu-origin md-svg-icon="settings"></md-icon>
+                </md-button>
+                <md-menu-content width="4">
+                    <md-menu-item>
+                        <md-button ng-click="show_main_dashboard()">
+                          <md-icon md-svg-icon="view-dashboard"></md-icon>
+                          Main Dashboard
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-divider></md-menu-divider>
+                  <md-menu-item>
+                      <md-button ng-click="show_profile()">
+                        <md-icon md-svg-icon="human-greeting"></md-icon>
+                        View Profile
+                      </md-button>
+                  </md-menu-item>
+                  <md-menu-divider></md-menu-divider>
+                  <md-menu-item>
+                    <md-button ng-click="showAlert($event, 'token')">
+                      <md-icon md-svg-icon="delete-forever" md-menu-align-target></md-icon>
+                      Delete Token
+                    </md-button>
+                  </md-menu-item>
+                  <md-menu-divider></md-menu-divider>
+                  <md-menu-item>
+                    <md-button ng-click="showAlert($event, 'profile')">
+                      <md-icon md-svg-icon="delete-sweep"></md-icon>
+                      Delete Profile Data
+                    </md-button>
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+          </section>
+
+          <h2><md-icon md-svg-icon="view-dashboard"></md-icon> ElecTrello</h2>
+      </header>
+
+      <section ng-view></section>
+  </body>
   <script>
     // weird way of including jquery
     window.$ = window.jQuery = require('./js/jquery.min.js');
