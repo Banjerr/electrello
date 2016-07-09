@@ -4,7 +4,7 @@ url = require('url')
 # db stuffs
 low = require('lowdb');
 db = low('auth.json');
-db.defaults({ access_token: [], profile_data: [], board_names: [] }).value()
+db.defaults({ access_token: [], profile_data: [], board_names: [], organizations: [] }).value()
 # trello stuffs
 Trello = require("node-trello")
 
@@ -27,11 +27,19 @@ loginCallback = "http://#{domain}:#{port}/cb"
 #need to store token: tokenSecret pairs; in a real application, this should be more permanent (redis would be a good choice)
 oauth_secrets = {}
 
-bio_data = {}
-board_data = {}
-boardIDs = {}
-board_names = []
-
+bio_data = []
+board_data = []
+boardIDs = []
+organizationIDs = []
+board_names = {}
+board_id = []
+board_info = []
+board_description = {}
+board_lists = []
+org_info = []
+org_names = []
+org_id = []
+org_members = []
 
 oauth = new OAuth(requestURL, accessURL, key, secret, "1.0", loginCallback, "HMAC-SHA1")
 
@@ -61,24 +69,41 @@ cb = (req, res) ->
           profile_data: bio_data
       }).value();
 
-      # get and save the board names
-      # console.log(bio_data['idBoards']);
+      # get and save the board/organization names
       boardIDs = bio_data['idBoards'];
+      organizationIDs = bio_data['idOrganizations'];
       trelloToken = accessToken;
       t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
-      get_board_data = (boardIDArray) ->
+      get_organization_data = (organizationIDs) ->
+      o = 0
+      while o < organizationIDs.length
+        t.get '/1/organizations/' + organizationIDs[o] + '?members=all&member_fields=username,fullName', (err, data) ->
+          if err
+            throw err
+          org_info = data
+          org_names = org_info['name']
+          org_id = org_info['id']
+          org_members = org_info['members']
+          db.get('organizations').push({ id: org_id, name: org_names, members: org_members }).value()
+        o++
+      
+
+      get_board_data = (boardIDs) ->
       i = 0
       while i < boardIDs.length
-        t.get '/1/boards/' + boardIDs[i], (err, data) ->
+        t.get '/1/boards/' + boardIDs[i] + '?lists=open&list_fields=name', (err, data) ->
           if err
             throw err
           board_info = data
           board_names = board_info['name']
-          console.log(board_names);
-          db.get('board_names').push(board_names: board_names).value()          
+          board_id = board_info['id']
+          board_lists = board_info['lists']
+          db.get('board_names').push({ id: board_id, name: board_names, lists: board_lists }).value()
         i++
       return
+
+
     )
 
 http.createServer( (req, res) ->
