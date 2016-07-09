@@ -1,7 +1,20 @@
 <article class="dashboard" ng-controller="DashboardController">
-    <ul ng-repeat="boardID in boardIDs">
-        <li>{{ boardID }}</li>
-        <md-button class="md-raised" ng-click="get_board_data(boardID)">Get Board Data</md-button>
-    </ul>
-    {{ board_data }}
+    <div ng-repeat="board_name in board_names">
+        <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
+            <md-card-title>
+              <md-card-title-text>
+                <span class="md-headline">{{ board_name }}</span>
+                <span class="md-subhead"></span>
+              </md-card-title-text>
+              <md-card-title-media>
+                <div class="md-media-lg card-media"></div>
+              </md-card-title-media>
+            </md-card-title>
+            <md-card-actions layout="row" layout-align="end center">
+              <md-button class="md-raised" ng-click="">View Board</md-button>
+              <md-button>Delete Board</md-button>
+            </md-card-actions>
+        </md-card>
+    </div>
+
 </article>

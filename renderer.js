@@ -10,7 +10,7 @@ const {BrowserWindow} = require('electron').remote;
 // db stuff
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
-var db = low('auth.json');
+const db = low('auth.json');
 
 // we need this to build the requests
 var request = require('request')
@@ -28,7 +28,7 @@ if(hasAccessToken > 0){
 
 // Trello stuff
 var Trello = require("node-trello");
-var t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
+const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
 // Define the electrello app module
 var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute']).config(function($mdThemingProvider) {
@@ -81,7 +81,7 @@ electrello.config(function($routeProvider) {
     })
     .when('/profile', {
         templateUrl : 'views/profile.html',
-        controller  : 'DashboardController',
+        controller  : 'ProfileController',
         resolve : {
             "check" : function($location) {
                 // if they've got an access token we're good
@@ -97,23 +97,68 @@ electrello.config(function($routeProvider) {
     });
 });
 
+// factory to get board names
+electrello.factory('BoardFactory', ['$http', function ($http, $scope) {
+     var factory = {},
+         boardIDs = [],
+         board_data = [],
+         board_info = [],
+         board_names = [];
+
+     // pass the profile info to the view
+     board_data = db.get('profile_data').take(1).value();
+     boardIDs = board_data[0].profile_data.idBoards;
+
+     factory.get_board_data  = function (boardIDArray) {
+       for(var i = 0; i < boardIDs.length; i++){
+         t.get("/1/boards/" + boardIDs[i], function(err, data) {
+           if (err) throw err;
+           board_info = data;
+           board_names.push(board_info['name']);
+           return board_names;
+        });
+       };
+     };
+     return {
+       get_board_data: factory.get_board_data,
+       factory: factory
+     }
+ }]);
+
 // dashboard controller
-electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window){
+electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window, $q, BoardFactory){
+    var boardIDs = [],
+        board_data = [],
+        board_info = [],
+        board_names = [];
+
+    // pass the profile info to the view
+    board_data = db.get('profile_data').take(1).value();
+    boardIDs = board_data[0].profile_data.idBoards;
+    
     // set the body class
     $rootScope.pageClass = 'dashboard';
 
-    // pass the profile info to the view
-    var board_data = db.get('profile_data').take(1).value();
-    $scope.boardIDs = board_data[0].profile_data.idBoards;
+    // $scope.board_array = BoardFactory.get_board_data();
+    // console.log($scope.board_array);
+    // $scope.board_array = electrello.factory.boardIDs;
+    // console.log(BoardFactory.factory.board_array);
 
-    // get board data
-    $scope.get_board_data = function(boardID) {
-        t.get("/1/boards/" + boardID, function(err, data) {
-          if (err) throw err;
-          $scope.board_data = data;
-        });
+    // get data for boards
+    $scope.get_board_data = function(boardIDArray) {
+        for(var i = 0; i < boardIDs.length; i++){
+            t.get("/1/boards/" + boardIDs[i], function(err, data) {
+              if (err) throw err;
+              board_info = data;
+              board_names.push(board_info['name']);
+              $scope.board_names = board_names;
+              //console.log($scope.board_names);
+              return $scope.board_names
+            });
+        }
     }
 
+    $scope.board_array = $scope.get_board_data(boardIDs);
 });
 
 // menu controller
@@ -126,7 +171,7 @@ electrello.controller('MenuController', function($scope, $route, $routeParams, $
     $scope.openMenu = function($mdOpenMenu, ev) {
       originatorEv = ev;
       $mdOpenMenu(ev);
-    };
+    }
 
     // show the profile data we got upon authorization
     $scope.show_profile = function() {
