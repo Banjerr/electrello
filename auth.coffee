@@ -4,7 +4,9 @@ url = require('url')
 # db stuffs
 low = require('lowdb');
 db = low('auth.json');
-db.defaults({ access_token: [], profile_data: [] }).value()
+db.defaults({ access_token: [], profile_data: [], board_names: [] }).value()
+# trello stuffs
+Trello = require("node-trello")
 
 #run locally on a port that probably isn't taken
 domain = "127.0.0.1"
@@ -26,6 +28,10 @@ loginCallback = "http://#{domain}:#{port}/cb"
 oauth_secrets = {}
 
 bio_data = {}
+board_data = {}
+boardIDs = {}
+board_names = []
+
 
 oauth = new OAuth(requestURL, accessURL, key, secret, "1.0", loginCallback, "HMAC-SHA1")
 
@@ -54,6 +60,25 @@ cb = (req, res) ->
       db.get('profile_data').push({
           profile_data: bio_data
       }).value();
+
+      # get and save the board names
+      # console.log(bio_data['idBoards']);
+      boardIDs = bio_data['idBoards'];
+      trelloToken = accessToken;
+      t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
+
+      get_board_data = (boardIDArray) ->
+      i = 0
+      while i < boardIDs.length
+        t.get '/1/boards/' + boardIDs[i], (err, data) ->
+          if err
+            throw err
+          board_info = data
+          board_names = board_info['name']
+          console.log(board_names);
+          db.get('board_names').push(board_names: board_names).value()          
+        i++
+      return
     )
 
 http.createServer( (req, res) ->

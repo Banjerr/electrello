@@ -97,68 +97,74 @@ electrello.config(function($routeProvider) {
     });
 });
 
-// factory to get board names
-electrello.factory('BoardFactory', ['$http', function ($http, $scope) {
-     var factory = {},
-         boardIDs = [],
-         board_data = [],
-         board_info = [],
-         board_names = [];
-
-     // pass the profile info to the view
-     board_data = db.get('profile_data').take(1).value();
-     boardIDs = board_data[0].profile_data.idBoards;
-
-     factory.get_board_data  = function (boardIDArray) {
-       for(var i = 0; i < boardIDs.length; i++){
-         t.get("/1/boards/" + boardIDs[i], function(err, data) {
-           if (err) throw err;
-           board_info = data;
-           board_names.push(board_info['name']);
-           return board_names;
-        });
-       };
-     };
-     return {
-       get_board_data: factory.get_board_data,
-       factory: factory
-     }
- }]);
+// // factory to get board names
+// electrello.factory('BoardFactory', ['$http', function ($http, $scope) {
+//      var factory = {},
+//          boardIDs = [],
+//          board_data = [],
+//          board_info = [],
+//          board_names = [];
+//
+//      // pass the profile info to the view
+//      board_data = db.get('profile_data').take(1).value();
+//      boardIDs = board_data[0].profile_data.idBoards;
+//
+//      factory.get_board_data  = function (boardIDArray) {
+//        for(var i = 0; i < boardIDs.length; i++){
+//          t.get("/1/boards/" + boardIDs[i], function(err, data) {
+//            if (err) throw err;
+//            board_info = data;
+//            board_names.push(board_info['name']);
+//            return board_names;
+//         });
+//        };
+//      };
+//      return {
+//        get_board_data: factory.get_board_data,
+//        factory: factory
+//      }
+//  }]);
 
 // dashboard controller
-electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window, $q, BoardFactory){
-    var boardIDs = [],
-        board_data = [],
-        board_info = [],
-        board_names = [];
+electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window){
+    let num_of_boards = db.get('board_names').size().value();
+    $scope.board_names = db.get('board_names').take(num_of_boards).value();
 
-    // pass the profile info to the view
-    board_data = db.get('profile_data').take(1).value();
-    boardIDs = board_data[0].profile_data.idBoards;
-    
-    // set the body class
-    $rootScope.pageClass = 'dashboard';
-
-    // $scope.board_array = BoardFactory.get_board_data();
-    // console.log($scope.board_array);
-    // $scope.board_array = electrello.factory.boardIDs;
-    // console.log(BoardFactory.factory.board_array);
-
-    // get data for boards
-    $scope.get_board_data = function(boardIDArray) {
-        for(var i = 0; i < boardIDs.length; i++){
-            t.get("/1/boards/" + boardIDs[i], function(err, data) {
-              if (err) throw err;
-              board_info = data;
-              board_names.push(board_info['name']);
-              $scope.board_names = board_names;
-              //console.log($scope.board_names);
-              return $scope.board_names
-            });
-        }
-    }
-
-    $scope.board_array = $scope.get_board_data(boardIDs);
+    // var boardIDs = [],
+    //     board_data = [],
+    //     board_info = [],
+    //     board_names = [];
+    //
+    // // get stuff from db
+    // board_data = db.get('profile_data').take(1).value();
+    // boardIDs = board_data[0].profile_data.idBoards;
+    //
+    // // set the body class
+    // $rootScope.pageClass = 'dashboard';
+    //
+    // // $scope.board_array = BoardFactory.get_board_data();
+    // // console.log($scope.board_array);
+    // // $scope.board_array = electrello.factory.boardIDs;
+    // // console.log(BoardFactory.factory.board_array);
+    //
+    // // get data for boards
+    // var sync_board_data = function(boardIDArray) {
+    //     for(var i = 0; i < boardIDs.length; i++){
+    //         t.get("/1/boards/" + boardIDs[i], function(err, data) {
+    //           if (err) throw err;
+    //           board_info = data;
+    //           board_names.push(board_info['name']);
+    //           $scope.board_names = board_names;
+    //           //console.log($scope.board_names);
+    //           db.get('board_names').push({
+    //               board_names : $scope.board_names
+    //           }).value();
+    //           return $scope.board_names
+    //         });
+    //     }
+    // }
+    //
+    // //$scope.board_array = get_board_data(boardIDs);
 });
 
 // menu controller
