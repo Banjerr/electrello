@@ -3,7 +3,7 @@
 A desktop app that helps you manage your Trello boards.
 
 ## Demo (so far)
-[demo-gif](https://dl.dropboxusercontent.com/s/vxqh02wwhttv1e1/62E076BF-01FC-4BCE-82A6-DB01D6EF11E9-857-00000242BBBE096F.gif)
+![demo-gif](https://github.com/Banjerr/electrello/blob/master/images/demo-gif.gif)
 
 ## Contributing
 
