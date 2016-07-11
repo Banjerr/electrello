@@ -116,7 +116,8 @@
             return db.get('organizations').push({
               id: org_id,
               name: org_names,
-              members: org_members
+              members: org_members,
+              logoHash: ''
             }).value();
           });
           o++;
@@ -124,7 +125,7 @@
         get_board_data = function(boardIDs) {};
         i = 0;
         while (i < boardIDs.length) {
-          t.get('/1/boards/' + boardIDs[i] + '?lists=open&list_fields=name', function(err, data) {
+          t.get('/1/boards/' + boardIDs[i] + '?list_fields=name', function(err, data) {
             if (err) {
               throw err;
             }

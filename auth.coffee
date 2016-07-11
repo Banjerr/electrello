@@ -85,14 +85,13 @@ cb = (req, res) ->
           org_names = org_info['name']
           org_id = org_info['id']
           org_members = org_info['members']
-          db.get('organizations').push({ id: org_id, name: org_names, members: org_members }).value()
+          db.get('organizations').push({ id: org_id, name: org_names, members: org_members, logoHash: '' }).value()
         o++
-      
 
       get_board_data = (boardIDs) ->
       i = 0
       while i < boardIDs.length
-        t.get '/1/boards/' + boardIDs[i] + '?lists=open&list_fields=name', (err, data) ->
+        t.get '/1/boards/' + boardIDs[i] + '?list_fields=name', (err, data) ->
           if err
             throw err
           board_info = data
@@ -102,8 +101,6 @@ cb = (req, res) ->
           db.get('board_names').push({ id: board_id, name: board_names, lists: board_lists }).value()
         i++
       return
-
-
     )
 
 http.createServer( (req, res) ->

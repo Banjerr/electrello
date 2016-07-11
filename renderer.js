@@ -31,7 +31,7 @@ var Trello = require("node-trello");
 const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
 // Define the electrello app module
-var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute']).config(function($mdThemingProvider) {
+var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource']).config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default').dark()
     .primaryPalette('red', {'default':'400'})
     .accentPalette('yellow', {'default':'500'});
@@ -42,6 +42,19 @@ electrello.config(function($mdIconProvider) {
     $mdIconProvider
       .defaultIconSet('images/mdi.svg');
 });
+
+electrello.config(['$resourceProvider', function($resourceProvider) {
+  // Don't strip trailing slashes from calculated URLs
+  $resourceProvider.defaults.stripTrailingSlashes = false;
+}]);
+
+// filter to check to see if the object is empty
+electrello.filter('isEmpty', [function() {
+  return function(object) {
+    //return angular.equals({}, object);
+    return Object.keys(object).length === 0;
+  }
+}]);
 
 // route controller
 electrello.config(function($routeProvider) {
@@ -99,8 +112,15 @@ electrello.config(function($routeProvider) {
 
 // dashboard controller
 electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window, $mdDialog){
+    // get the updated list of boards
     let num_of_boards = db.get('board_names').size().value();
     $scope.board_names = db.get('board_names').take(num_of_boards).value();
+
+    // setting up some resources
+    // var Board = $resource('https://api.trello.com/1/boards/:board_id',
+    //     {board_id: @board, key: f4c23306bf38a3ec4ca351f999ee05d3, token: @token}, {
+    //
+    //     });
 
     // warn em before deleting anything
     $scope.showAlert = function(ev, boardID) {
@@ -198,6 +218,27 @@ electrello.controller('ProfileController', function ($scope) {
 
     let num_of_orgs = db.get('organizations').size().value();
     $scope.organizations = db.get('organizations').take(num_of_orgs).value();
+
+    // get the organization logo
+    let get_organization_logo = function(organizationName) {
+      t.get('/1/organizations/' + organizationName + '/logoHash', function(err, data) {
+        var org_logo;
+        if (err) {
+          throw err;
+        }
+        org_logo = data;
+        return db.get('organizations').find({ name: organizationName }).assign({ logoHash: org_logo._value }).value();
+      });
+    }
+
+    if(num_of_orgs > 0) {
+        let organizations = $scope.organizations;
+        let l = 0;
+        while (l < organizations.length){
+            get_organization_logo(organizations[l].name);
+            l++
+        }
+    }
 });
 
 // Keep a global reference of the window object, if you don't, the window will

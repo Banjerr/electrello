@@ -1,7 +1,12 @@
 <article class="profile_data" ng-controller="ProfileController">
-    <h2 class="fullName">Howdy {{ profile_data.fullName }}</h2>
-    <img src="https://www.gravatar.com/avatar/{{ profile_data.gravatarHash }}?s=150" alt="{{ profile_data.username }}" />
-    <div ng-show="profile_data.idOrganizations" class="organizationStuff">
+    <h2 class="fullName">Howdy <span ng-if="profile_data.fullName">{{ profile_data.fullName }}</span> <span ng-if="profile_data.username">({{ profile_data.username }})</span></h2>
+    <img ng-if="!(profile_data.gravatarHash | isEmpty)" src="https://www.gravatar.com/avatar/{{ profile_data.gravatarHash }}?s=150" alt="{{ profile_data.username }}" />
+
+    <div ng-if="!(profile_data.bio | isEmpty)" class="bioParagraph">
+        <h3>Bio:</h3>
+        <p>{{ profile_data.bio }}</p>
+    </div>
+    <div ng-if="!(profile_data.idOrganizations | isEmpty)" class="organizationStuff">
         <h2>Organiations</h2>
         <div ng-repeat="organization in organizations">
             <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
@@ -10,8 +15,8 @@
                     <span class="md-headline">{{ organization.name }}</span>
                     <span class="md-subhead">{{ organization.id }}</span>
                   </md-card-title-text>
-                  <md-card-title-media>
-                    <div class="md-media-lg card-media"></div>
+                  <md-card-title-media ng-if="organization.logoHash">
+                    <div class="md-media-lg card-media"><img src="https://trello-logos.s3.amazonaws.com/{{ organization.logoHash }}/170.png" alt="{{ organization.name }}" /></div>
                   </md-card-title-media>
                 </md-card-title>
                 <md-card-actions layout="row" layout-align="end center">
