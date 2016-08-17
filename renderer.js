@@ -107,6 +107,10 @@ electrello.config(function($routeProvider) {
                 }
             }
         }
+    })
+    .when('/board/:boardID', {
+        templateUrl : 'views/board.html',
+        controller  : 'BoardController'
     });
 });
 
@@ -115,6 +119,12 @@ electrello.controller('DashboardController', function($scope, $rootScope, $route
     // get the updated list of boards
     let num_of_boards = db.get('board_names').size().value();
     $scope.board_names = db.get('board_names').take(num_of_boards).value();
+
+    // show a board
+    $scope.show_this_board = function( boardID ) {
+        $rootScope.pageClass = 'board ' + boardID;
+        $location.path('/board/' + boardID);
+    }
 
     // setting up some resources
     // var Board = $resource('https://api.trello.com/1/boards/:board_id',
@@ -148,6 +158,26 @@ electrello.controller('DashboardController', function($scope, $rootScope, $route
           console.log(data);
         });
     }
+});
+
+// board controller
+electrello.controller('BoardController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+  // get the id from the route
+  let boardID = $routeParams.boardID;
+  $scope.board_data = [];
+
+  // get some board data
+  let get_board_data = function( boardID ) {
+    t.get("/1/boards/" + boardID , function(err, data) {
+      if (err) throw err;
+
+      // assign key parts to scope
+      $scope.board_data = data;
+      console.log($scope.board_data);
+    });
+  }
+
+  get_board_data( boardID );
 });
 
 // menu controller
