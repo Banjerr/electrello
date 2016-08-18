@@ -122,7 +122,7 @@ electrello.controller('DashboardController', function($scope, $rootScope, $route
 
     // show a board
     $scope.show_this_board = function( boardID ) {
-        $rootScope.pageClass = 'board ' + boardID;
+        $rootScope.pageClass = 'board';
         $location.path('/board/' + boardID);
     }
 
@@ -165,19 +165,41 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   // get the id from the route
   let boardID = $routeParams.boardID;
   $scope.board_data = [];
+  $scope.board_lists = [];
 
   // get some board data
   let get_board_data = function( boardID ) {
-    t.get("/1/boards/" + boardID , function(err, data) {
+    t.get("/1/boards/" + boardID, function(err, data) {
       if (err) throw err;
-
-      // assign key parts to scope
       $scope.board_data = data;
       console.log($scope.board_data);
+
+      // set the background
+      if ( data.prefs.backgroundColor != null ) {
+        $rootScope.board_background_color = data.prefs.backgroundColor;
+      }
+
+      if ( data.prefs.backgroundImage != null ) {
+        $rootScope.board_background_image = data.prefs.backgroundImage;
+      }
+
+      // apply it to the scopes
+      $scope.$apply();
+      $rootScope.$apply();
     });
   }
-
   get_board_data( boardID );
+
+  // get lists
+  let get_board_lists = function( boardID ) {
+    t.get("/1/boards/" + boardID + "/lists", function(err, data) {
+      if (err) throw err;
+      $scope.board_lists = data;
+      console.log($scope.board_lists);
+      $scope.$apply();
+    });
+  }
+  get_board_lists( boardID );
 });
 
 // menu controller
@@ -291,10 +313,10 @@ electrello.controller('AuthController', function($scope, $location, $route, $rou
             width: 360,
             height: 440,
             'webPreferences': {
-              'nodeIntegration': true,
+              'nodeIntegration': false,
               'webSecurity': false
-          },
-          frame: false
+            },
+            frame: false
         });
 
         // call the handleCallback function when we get response details back

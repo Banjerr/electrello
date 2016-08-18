@@ -50,7 +50,10 @@
           <h2><md-icon md-svg-icon="view-dashboard"></md-icon> ElecTrello</h2>
       </header>
 
-      <section ng-view></section>
+      <!-- <section ng-if="!board_background_color" class="electrelloBody" ng-view ng-style="{'background-image':'url(' + board_background_image + ')'}"></section>
+      <section ng-if="!board_background_image" class="electrelloBody" ng-view ng-style="{'background': board_background}"></section>
+      <section ng-if="!board_background_image || !board_background_color" class="electrelloBody" ng-view"></section> -->
+      <section class="electrelloBody" ng-view ng-style="{'background-image':'url(' + board_background_image + ')'}"></section>
   </body>
   <script>
     // weird way of including jquery

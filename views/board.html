@@ -1,4 +1,13 @@
 <article class="boardView" ng-controller="BoardController">
-  <h2>wtf</h2>
-  {{board_data}}
+  <h2>{{board_data.name}}</h2>
+  <ul dnd-list="list">
+    <li ng-repeat="board_list in board_lists"
+            dnd-draggable="board_list"
+            dnd-effect-allowed="move"
+            dnd-moved="board_lists.splice($index, 1)"
+            dnd-selected="models.selected = board_list"
+            ng-class="{selected: models.selected === board_list}">
+      {{board_list.name}}
+    </li>
+  </ul>
 </article><!-- .boardView -->
