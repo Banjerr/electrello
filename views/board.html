@@ -1,20 +1,22 @@
 <article class="boardView" ng-controller="BoardController">
   <h2>{{board_data.name}}</h2>
-  <ul dnd-list="list">
+  <ul dnd-list="board_lists">
     <li ng-repeat="board_list in board_lists"
-            dnd-draggable="board_list"
-            dnd-effect-allowed="move"
-            dnd-moved="board_lists.splice($index, 1)"
-            dnd-selected=""
-            ng-class="">
+    dnd-draggable="board_list"
+    dnd-effect-allowed="move"
+    dnd-moved="board_lists.splice($index, 1)"
+    dnd-selected=""
+    ng-class="">
       {{board_list.name}}
-      <div ng-repeat="list_card in list_cards" dnd-draggable="list_card"
-      dnd-effect-allowed="move"
-      dnd-moved="list_card.splice($index, 1)"
-      dnd-selected=""
-      ng-class="">
-        {{list_card.name}}
-      </div>
+      <ul dnd-list="list_cards">
+        <li ng-repeat="list_card in list_cards | filter: {idList: board_list.id}" dnd-draggable="board_lists"
+        dnd-effect-allowed="move"
+        dnd-moved="list_cards.splice($index, 1)"
+        dnd-selected=""
+        ng-class="">
+          {{list_card.name}}
+        </li>
+      </ul>
     </li>
   </ul>
 </article><!-- .boardView -->
