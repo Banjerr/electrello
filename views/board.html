@@ -5,9 +5,16 @@
             dnd-draggable="board_list"
             dnd-effect-allowed="move"
             dnd-moved="board_lists.splice($index, 1)"
-            dnd-selected="models.selected = board_list"
-            ng-class="{selected: models.selected === board_list}">
+            dnd-selected=""
+            ng-class="">
       {{board_list.name}}
+      <div ng-repeat="list_card in list_cards" dnd-draggable="list_card"
+      dnd-effect-allowed="move"
+      dnd-moved="list_card.splice($index, 1)"
+      dnd-selected=""
+      ng-class="">
+        {{list_card.name}}
+      </div>
     </li>
   </ul>
 </article><!-- .boardView -->

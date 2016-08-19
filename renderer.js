@@ -31,7 +31,7 @@ var Trello = require("node-trello");
 const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
 // Define the electrello app module
-var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource']).config(function($mdThemingProvider) {
+var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists']).config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default').dark()
     .primaryPalette('red', {'default':'400'})
     .accentPalette('yellow', {'default':'500'});
@@ -200,6 +200,17 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
     });
   }
   get_board_lists( boardID );
+
+  // get cards
+  let get_list_cards = function( boardID ) {
+    t.get("/1/boards/" + boardID + "/cards", function(err, data) {
+      if (err) throw err;
+      $scope.list_cards = data;
+      console.log($scope.list_cards);
+      $scope.$apply();
+    });
+  }
+  get_list_cards( boardID );
 });
 
 // menu controller
