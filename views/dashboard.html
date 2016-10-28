@@ -1,7 +1,8 @@
 <article class="dashboard" ng-controller="DashboardController">
-    <div ng-repeat="board_name in board_names">
+    <div ng-class="board_name.closed ? 'closed' : 'open'" ng-repeat="board_name in board_names">
         <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
             <md-card-title>
+              {{board_name.closed}}
               <md-card-title-text>
                 <span class="md-headline">{{ board_name.name }}</span>
                 <span class="md-subhead">{{ board_name.id }}</span>
