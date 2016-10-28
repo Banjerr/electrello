@@ -47,7 +47,14 @@ header {
     padding: 0; }
     .electrelloBody .boardView ul li {
       display: inline-block;
+      vertical-align: top;
       width: 29%;
       background: gray;
       padding: 1%;
       margin: 0 1% 2%; }
+      .electrelloBody .boardView ul li ul li {
+        display: block;
+        background: lightgray;
+        margin: 4% 0;
+        padding: 3%;
+        width: 94%; }
