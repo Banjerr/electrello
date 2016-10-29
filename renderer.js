@@ -166,13 +166,14 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   let boardID = $routeParams.boardID;
   $scope.board_data = [];
   $scope.board_lists = [];
+  $scope.list_cards = [];
+  $scope.masterListObject = {};
 
   // get some board data
   let get_board_data = function( boardID ) {
     t.get("/1/boards/" + boardID, function(err, data) {
       if (err) throw err;
       $scope.board_data = data;
-      console.log($scope.board_data);
 
       // set the background
       if ( data.prefs.backgroundColor != null ) {
@@ -195,7 +196,12 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
     t.get("/1/boards/" + boardID + "/lists", function(err, data) {
       if (err) throw err;
       $scope.board_lists = data;
-      console.log($scope.board_lists);
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.board_lists ) {
+        $scope.masterListObject = data;
+      }
+
       $scope.$apply();
     });
   }
@@ -206,11 +212,50 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
     t.get("/1/boards/" + boardID + "/cards", function(err, data) {
       if (err) throw err;
       $scope.list_cards = data;
-      console.log($scope.list_cards);
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.list_cards ) {
+        for ( let i = 0; i < $scope.masterListObject.length; i++ ) {
+          $scope.masterListObject[i]['cards'] = [];
+          $scope.list_cards.forEach( function(card) {
+            if( $scope.masterListObject[i].id == card.idList ) {
+              $scope.masterListObject[i]['cards'].push(card);
+              console.log('master list ', $scope.masterListObject);
+            }
+          });
+        }
+      }
+
       $scope.$apply();
     });
   }
   get_list_cards( boardID );
+
+  $scope.dragoverCallback = function(event, index, external, type) {
+    $scope.logListEvent('dragged over', event, index, external, type);
+    // Disallow dropping in the third row. Could also be done with dnd-disable-if.
+    return index < 10;
+  };
+
+  $scope.dropCallback = function(event, index, item, external, type, allowedType) {
+    $scope.logListEvent('dropped at', event, index, external, type);
+    if (external) {
+        if (allowedType === 'itemType' && !item.label) return false;
+        if (allowedType === 'containerType' && !angular.isArray(item)) return false;
+    }
+    return item;
+  };
+
+  $scope.logEvent = function(message, event) {
+    console.log(message, '(triggered by the following', event.type, 'event)');
+    console.log(event);
+  };
+
+  $scope.logListEvent = function(action, event, index, external, type) {
+    var message = external ? 'External ' : '';
+    message += type + ' element is ' + action + ' position ' + index;
+    $scope.logEvent(message, event);
+  };
 });
 
 // menu controller

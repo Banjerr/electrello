@@ -1,22 +1,40 @@
 <article class="boardView" ng-controller="BoardController">
   <h2>{{board_data.name}}</h2>
-  <ul dnd-list="board_lists">
-    <li ng-repeat="board_list in board_lists"
-    dnd-draggable="board_list"
+  <ul dnd-list="masterListObject"
+  dnd-external-sources="true"
+  dnd-allowed-types="['containerType']"
+  dnd-dragover="dragoverCallback(event, index, external, type)"
+  dnd-drop="dropCallback(event, index, item, external, type, 'containerType')">
+    <li ng-repeat="list in masterListObject"
+    dnd-draggable="list"
     dnd-effect-allowed="move"
-    dnd-moved="board_lists.splice($index, 1)"
+    dnd-type="'containerType'"
+    dnd-moved="masterListObject.splice($index, 1)"
     dnd-selected=""
     ng-class="">
-      {{board_list.name}}
-      <ul dnd-list="list_cards">
-        <li ng-repeat="list_card in list_cards | filter: {idList: board_list.id}" dnd-draggable="board_lists"
+      {{list.name}}
+      <ul dnd-list="list"
+      dnd-allowed-types="['itemType']"
+      dnd-horizontal-list="true"
+      dnd-external-sources="true"
+      dnd-dragover="dragoverCallback(event, index, external, type)"
+      dnd-drop="dropCallback(event, index, item, external, type, 'itemType')"
+      dnd-inserted="logEvent('Element was inserted at position ' + index, event)">
+        <li ng-repeat="card in list.cards"
+        dnd-draggable="card"
         dnd-effect-allowed="move"
-        dnd-moved="list_cards.splice($index, 1)"
+        dnd-moved="list.cards.splice($index, 1); logEvent('Item moved', event)"
+        dnd-type="'itemType'"
+        dnd-dragstart="logEvent('Started to drag an item', event)"
+        dnd-canceled="logEvent('Drag operation canceled', event)"
+        dnd-dragend="logEvent('Drag operation ended', event)"
         dnd-selected=""
         ng-class="">
-          {{list_card.name}}
+          {{card.name}}
         </li>
       </ul>
     </li>
   </ul>
 </article><!-- .boardView -->
+
+{{masterListObject}}
