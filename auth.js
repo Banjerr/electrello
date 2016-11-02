@@ -156,5 +156,6 @@
   }).listen(port, domain);
 
   console.log("Server running at " + domain + ":" + port + "; hit " + domain + ":" + port + "/login");
+  console.log('This console message is really important.');
 
 }).call(this);
