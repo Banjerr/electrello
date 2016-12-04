@@ -252,7 +252,7 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
     return item;
   };
 
-  $scope.moveStuff = function(event, index, item, type, external, destination) {
+  $scope.moveCard = function(event, index, item, type, external, destination) {
     // list/card ID
     let listID = destination.id;
     let cardID = item.id;
@@ -265,6 +265,27 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
       console.log('data');
       console.log(data);
     });
+
+    // return true so directive knows we are handling the move
+    return true;
+  }
+
+  $scope.moveList = function(event, index, item, type, external, destination) {
+    // list/card ID
+    let listID = item.id;
+
+    // add new item to destination's card array
+    destination.splice(index, 0, item);
+
+    $scope.$apply();
+
+    t.put("/1/lists/" + listID, { pos : index }, function(err, data) {
+      if (err) throw err;
+      console.log('data');
+      console.log(data);
+    });
+
+    // return true so directive knows we are handling the move
     return true;
   }
 
