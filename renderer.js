@@ -11,6 +11,8 @@ const {BrowserWindow} = require('electron').remote;
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
 const db = low('auth.json');
+const PouchDB = require('pouchdb');
+const boardDB = new PouchDB('board_db');
 
 // we need this to build the requests
 var request = require('request')
@@ -236,13 +238,13 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   }
 
   $scope.dragoverCallback = function(event, index, external, type) {
-    $scope.logListEvent('dragged over', event, index, external, type);
+    // $scope.logListEvent('dragged over', event, index, external, type);
     // Disallow dropping in the third row. Could also be done with dnd-disable-if.
     return index < 10;
   };
 
   $scope.dropCallback = function(event, index, item, external, type, allowedType) {
-    $scope.logListEvent('dropped at', event, index, item, external, type, allowedType);
+    // $scope.logListEvent('dropped at', event, index, item, external, type, allowedType);
     if (external) {
         if (allowedType === 'itemType' && !item.label) return false;
         if (allowedType === 'containerType' && !angular.isArray(item)) return false;
@@ -251,41 +253,31 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   };
 
   $scope.moveStuff = function(event, index, item, type, external, destination) {
+    // list/card ID
+    let listID = destination.id;
+    let cardID = item.id;
+
     // add new item to destination's card array
     destination.cards.splice(index, 0, item);
-    // TODO : Setup stuff to update trello with the move
-    // t.post("/1/lists/" + listID. { idBoard : destination, pos : index }, function(err, data) {
-    //   if (err) throw err;
-    //   $scope.list_cards = data;
-    //
-    //   // build an object that the dragndrop directive handles better
-    //   if ( $scope.list_cards ) {
-    //     for ( let i = 0; i < $scope.masterListObject.length; i++ ) {
-    //       $scope.masterListObject[i]['cards'] = [];
-    //       $scope.list_cards.forEach( function(card) {
-    //         if( $scope.masterListObject[i].id == card.idList ) {
-    //           $scope.masterListObject[i]['cards'].push(card);
-    //           console.log('master list ', $scope.masterListObject);
-    //         }
-    //       });
-    //     }
-    //   }
-    //
-    //   $scope.$apply();
-    // });
+
+    t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
+      if (err) throw err;
+      console.log('data');
+      console.log(data);
+    });
     return true;
   }
 
-  $scope.logEvent = function(message, event) {
-    console.log(message, '(triggered by the following', event.type, 'event)');
-    console.log(event);
-  };
-
-  $scope.logListEvent = function(action, event, index, external, type) {
-    var message = external ? 'External ' : '';
-    message += type + ' element is ' + action + ' position ' + index;
-    $scope.logEvent(message, event);
-  };
+  // $scope.logEvent = function(message, event) {
+  //   console.log(message, '(triggered by the following', event.type, 'event)');
+  //   console.log(event);
+  // };
+  //
+  // $scope.logListEvent = function(action, event, index, external, type) {
+  //   var message = external ? 'External ' : '';
+  //   message += type + ' element is ' + action + ' position ' + index;
+  //   $scope.logEvent(message, event);
+  // };
 });
 
 // menu controller

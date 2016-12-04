@@ -23,11 +23,8 @@
         <li ng-repeat="card in list.cards"
         dnd-draggable="card"
         dnd-effect-allowed="move"
-        dnd-moved="list.cards.splice($index, 1); logEvent('list.cards', list.cards)"
+        dnd-moved="list.cards.splice($index, 1);"
         dnd-type="'itemType'"
-        dnd-dragstart="logEvent('Started to drag an item', event)"
-        dnd-canceled="logEvent('Drag operation canceled', event)"
-        dnd-dragend="logEvent('Drag operation ended', event)"
         dnd-selected=""
         ng-class="">
           {{card.name}}
