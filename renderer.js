@@ -15,6 +15,9 @@ const db = low('auth.json');
 // we need this to build the requests
 var request = require('request')
 
+// underscore
+const _ = require('underscore');
+
 // get the size of db entries
 let hasAccessToken = db.get('access_token').size().value();
 let hasProfileData = db.get('profile_data').size().value();
@@ -202,6 +205,8 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
         $scope.masterListObject = data;
       }
 
+      get_list_cards( boardID );
+
       $scope.$apply();
     });
   }
@@ -229,7 +234,6 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
       $scope.$apply();
     });
   }
-  get_list_cards( boardID );
 
   $scope.dragoverCallback = function(event, index, external, type) {
     $scope.logListEvent('dragged over', event, index, external, type);
@@ -246,19 +250,31 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
     return item;
   };
 
-  $scope.moveList = function( list ) {
-    console.log('list is ');
-    console.log(list);
+  $scope.moveStuff = function(event, index, item, type, external, destination) {
+    // add new item to destination's card array
+    destination.cards.splice(index, 0, item);
+    // TODO : Setup stuff to update trello with the move
+    // t.post("/1/lists/" + listID. { idBoard : destination, pos : index }, function(err, data) {
+    //   if (err) throw err;
+    //   $scope.list_cards = data;
+    //
+    //   // build an object that the dragndrop directive handles better
+    //   if ( $scope.list_cards ) {
+    //     for ( let i = 0; i < $scope.masterListObject.length; i++ ) {
+    //       $scope.masterListObject[i]['cards'] = [];
+    //       $scope.list_cards.forEach( function(card) {
+    //         if( $scope.masterListObject[i].id == card.idList ) {
+    //           $scope.masterListObject[i]['cards'].push(card);
+    //           console.log('master list ', $scope.masterListObject);
+    //         }
+    //       });
+    //     }
+    //   }
+    //
+    //   $scope.$apply();
+    // });
+    return true;
   }
-
-  $scope.moveCard = function( card ) {
-    console.log('card is ');
-    console.log(card);
-  }
-
-  // TODO :
-  // custom functions to move cards/lists and then update Trello upon each movement (if online)
-  // maybe get new lists / update local DB every time user logs in???
 
   $scope.logEvent = function(message, event) {
     console.log(message, '(triggered by the following', event.type, 'event)');

@@ -4,12 +4,12 @@
   dnd-external-sources="true"
   dnd-allowed-types="['containerType']"
   dnd-dragover="dragoverCallback(event, index, external, type)"
-  dnd-drop="dropCallback(event, index, item, external, type, 'containerType')">
+  dnd-drop="moveStuff(event, index, item, type, external, masterListObject)">
     <li ng-repeat="list in masterListObject"
     dnd-draggable="list"
-    dnd-effect-allowed="copyMove"
+    dnd-effect-allowed="move"
     dnd-type="'containerType'"
-    dnd-moved="moveList(listf)"
+    dnd-moved="masterListObject.splice($index, 1)"
     dnd-selected=""
     ng-class="">
       {{list.name}}
@@ -18,12 +18,12 @@
       dnd-horizontal-list="true"
       dnd-external-sources="true"
       dnd-dragover="dragoverCallback(event, index, external, type)"
-      dnd-drop="dropCallback(event, index, item, external, type, 'itemType')"
+      dnd-drop="moveStuff(event, index, item, type, external, list)"
       dnd-inserted="logEvent('Element was inserted at position ' + index, event)">
         <li ng-repeat="card in list.cards"
         dnd-draggable="card"
         dnd-effect-allowed="move"
-        dnd-moved="moveCard(card); logEvent('Item moved', event)"
+        dnd-moved="list.cards.splice($index, 1); logEvent('list.cards', list.cards)"
         dnd-type="'itemType'"
         dnd-dragstart="logEvent('Started to drag an item', event)"
         dnd-canceled="logEvent('Drag operation canceled', event)"
