@@ -238,13 +238,27 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   };
 
   $scope.dropCallback = function(event, index, item, external, type, allowedType) {
-    $scope.logListEvent('dropped at', event, index, external, type);
+    $scope.logListEvent('dropped at', event, index, item, external, type, allowedType);
     if (external) {
         if (allowedType === 'itemType' && !item.label) return false;
         if (allowedType === 'containerType' && !angular.isArray(item)) return false;
     }
     return item;
   };
+
+  $scope.moveList = function( list ) {
+    console.log('list is ');
+    console.log(list);
+  }
+
+  $scope.moveCard = function( card ) {
+    console.log('card is ');
+    console.log(card);
+  }
+
+  // TODO :
+  // custom functions to move cards/lists and then update Trello upon each movement (if online)
+  // maybe get new lists / update local DB every time user logs in???
 
   $scope.logEvent = function(message, event) {
     console.log(message, '(triggered by the following', event.type, 'event)');

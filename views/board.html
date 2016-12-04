@@ -7,9 +7,9 @@
   dnd-drop="dropCallback(event, index, item, external, type, 'containerType')">
     <li ng-repeat="list in masterListObject"
     dnd-draggable="list"
-    dnd-effect-allowed="move"
+    dnd-effect-allowed="copyMove"
     dnd-type="'containerType'"
-    dnd-moved="masterListObject.splice($index, 1)"
+    dnd-moved="moveList(listf)"
     dnd-selected=""
     ng-class="">
       {{list.name}}
@@ -23,7 +23,7 @@
         <li ng-repeat="card in list.cards"
         dnd-draggable="card"
         dnd-effect-allowed="move"
-        dnd-moved="list.cards.splice($index, 1); logEvent('Item moved', event)"
+        dnd-moved="moveCard(card); logEvent('Item moved', event)"
         dnd-type="'itemType'"
         dnd-dragstart="logEvent('Started to drag an item', event)"
         dnd-canceled="logEvent('Drag operation canceled', event)"
