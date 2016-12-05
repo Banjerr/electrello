@@ -1,18 +1,18 @@
 <article class="boardView" ng-controller="BoardController">
-  <h2>{{board_data.name}}</h2>
+  <header>
+    <h2 editable-text="board_data.name" onbeforesave="renameItem('boards', board_data.id, $data)">{{board_data.name}}</h2>
+  </header>
+
   <ul dnd-list="masterListObject"
   dnd-external-sources="true"
   dnd-allowed-types="['containerType']"
-  dnd-dragover="dragoverCallback(event, index, external, type)"
   dnd-drop="moveList(event, index, item, type, external, masterListObject)">
     <li ng-repeat="list in masterListObject"
     dnd-draggable="list"
     dnd-effect-allowed="move"
     dnd-type="'containerType'"
-    dnd-moved="masterListObject.splice($index, 1)"
-    dnd-selected=""
-    ng-class="">
-      {{list.name}}
+    dnd-moved="masterListObject.splice($index, 1)">
+      <h3 editable-text="list.name" onbeforesave="renameItem('lists', list.id, $data)">{{list.name}}</h3>
       <ul dnd-list="list"
       dnd-allowed-types="['itemType']"
       dnd-horizontal-list="true"
@@ -23,7 +23,28 @@
         dnd-effect-allowed="move"
         dnd-moved="list.cards.splice($index, 1);"
         dnd-type="'itemType'">
-          {{card.name}}
+          <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
+              <md-card-title>
+                <md-card-title-text>
+                  <h4 editable-text="card.name" onbeforesave="renameItem('cards', card.id, $data)">{{card.name}}</h4>
+                </md-card-title-text>
+                <md-card-title-media ng-if="card.stickers.length" ng-repeat="sticker in card.stickers">
+                  <div class="md-media-lg card-media"><img ng-src="{{sticker.imageUrl}}"/></div>
+                </md-card-title-media>
+              </md-card-title>
+              <md-card-content>
+                <p>{{card.desc}}</p>
+                <ul ng-show="card.idChecklists.length">
+                  <li ng-repeat="item in check_lists.checkItems">
+                    <span><i ng-click="updateChecklist(item, 'markAsIncomplete', check_lists)" class="fa fa-check-square-o" ng-show="item.state == 'complete'"></i><i ng-show="item.state != 'complete'" ng-click="updateChecklist(item, 'markAsComplete', check_lists)" class="fa fa-square-o"></i> </span>{{item.name}} <span class="pull-right" ng-click="deleteChecklistItem(item)"><i class="fa fa-trash-o"></i></span>
+                  </li>
+                </ul>
+              </md-card-content>
+              <md-card-actions layout="row" layout-align="end center">
+                <md-button class="md-raised" ng-click="">Delete Card</md-button>
+                <md-button ng-click="">Close Card</md-button>
+              </md-card-actions>
+          </md-card>
         </li>
       </ul>
     </li>
