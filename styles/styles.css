@@ -13,13 +13,15 @@
 .editable-wrap .editable-buttons button {
   display: inline-block;
   margin: 0 0 0 14px;
-  text-transform: capitalize; }
+  text-transform: capitalize;
+  font-family: 'Bitter', serif !important; }
 
 .editable-wrap input {
   background: transparent;
   color: #ffffff;
   border: 1px solid #ffffff;
-  box-shadow: none; }
+  box-shadow: none;
+  font-family: 'Bitter', serif !important; }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  /* HEADER *

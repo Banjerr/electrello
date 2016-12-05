@@ -182,8 +182,6 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
       if (err) throw err;
       $scope.board_data = data;
 
-      console.log($scope.masterListObject);
-
       // set the background
       if ( data.prefs.backgroundColor != null ) {
         $rootScope.board_background_color = data.prefs.backgroundColor;
@@ -234,16 +232,13 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
   let get_checklist = function( checklistID ) {
     t.get("/1/checklists/" + checklistID, function(err, data) {
       if (err) throw err;
-      console.log('checklist');
-      console.log(data);
-
       // TODO assign checklist to list somehow
       // ALSO! figure out local storage, lodash isnt great for boards obviously
       $scope.check_lists = data;
 
       $scope.$apply();
     });
-  }
+  };
 
   // update checklist item
   $scope.updateChecklist = function(item, status, checklist) {
@@ -261,8 +256,6 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     // delete checklist item in Trello
     t.put("/1/cards/" + cardID + "/checklist/" + checklistID + "/checkItem/" + checkItemID + "/state", { idChecklist : checklistID, idCheckItem : checkItemID, value : status}, function(err, data) {
       if (err) throw err;
-      console.log('checklist');
-      console.log(data);
       // TODO update view with new mark
       get_checklist(checklistID);
 
@@ -278,8 +271,6 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     // delete checklist item in Trello
     t.del("/1/checklists/" + checklistID + "/checkItems/" + checkItemID, { idCheckItem : checkItemID}, function(err, data) {
       if (err) throw err;
-      console.log('checklist');
-      console.log(data);
       // TODO update view with new mark
       get_checklist(checklistID);
     });
@@ -347,10 +338,9 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     // update Trello with the new name
     t.put("/1/" + itemType + "/" + itemId, { name : newName }, function(err, data) {
       if (err) throw err;
-      console.log(data);
     });
   };
-});
+}]);
 
 // menu controller
 electrello.controller('MenuController', ['$scope', '$route', '$routeParams', '$location', '$mdDialog', '$window', '$rootScope', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
