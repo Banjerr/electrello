@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
     <link rel="stylesheet" href="styles/styles.css" charset="utf-8">
   </head>
-  <body class="{{ pageClass }}" id="popupContainer">
+  <body class="{{ pageClass }} bitter" id="popupContainer">
       <header>
           <section class="profileSettings" ng-controller="MenuController">
               <md-menu>
@@ -69,5 +69,8 @@
     require('./node_modules/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js');
     // app stuff
     require('./renderer.js');
+    require('./bower_components/angular-xeditable/dist/js/xeditable.js');
+    // underscores
+    require('./js/underscore-min.js');
   </script>
 </html>

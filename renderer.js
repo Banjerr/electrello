@@ -11,9 +11,14 @@ const {BrowserWindow} = require('electron').remote;
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
 const db = low('auth.json');
+const PouchDB = require('pouchdb');
+const boardDB = new PouchDB('board_db');
 
 // we need this to build the requests
 var request = require('request')
+
+// underscore
+const _ = require('underscore');
 
 // get the size of db entries
 let hasAccessToken = db.get('access_token').size().value();
@@ -31,7 +36,7 @@ var Trello = require("node-trello");
 const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
 // Define the electrello app module
-var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists']).config(function($mdThemingProvider) {
+var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists', 'xeditable']).config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default').dark()
     .primaryPalette('red', {'default':'400'})
     .accentPalette('yellow', {'default':'500'});
@@ -115,7 +120,8 @@ electrello.config(function($routeProvider) {
 });
 
 // dashboard controller
-electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window, $mdDialog){
+electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', '$location', '$window', '$mdDialog',
+    function($scope, $rootScope, $route, $location, $window, $mdDialog){
     // get the updated list of boards
     let num_of_boards = db.get('board_names').size().value();
     $scope.board_names = db.get('board_names').take(num_of_boards).value();
@@ -158,21 +164,23 @@ electrello.controller('DashboardController', function($scope, $rootScope, $route
           console.log(data);
         });
     }
-});
+}]);
 
 // board controller
-electrello.controller('BoardController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$location', '$mdDialog', '$window', '$rootScope',
+    function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
   // get the id from the route
   let boardID = $routeParams.boardID;
   $scope.board_data = [];
   $scope.board_lists = [];
+  $scope.list_cards = [];
+  $scope.masterListObject = {};
 
   // get some board data
   let get_board_data = function( boardID ) {
     t.get("/1/boards/" + boardID, function(err, data) {
       if (err) throw err;
       $scope.board_data = data;
-      console.log($scope.board_data);
 
       // set the background
       if ( data.prefs.backgroundColor != null ) {
@@ -190,31 +198,152 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
   }
   get_board_data( boardID );
 
+  // get cards
+  let get_list_cards = function( boardID ) {
+    t.get("/1/boards/" + boardID + "/cards", { fields : 'all', stickers : true, sticker_fields : 'all' },function(err, data) {
+      if (err) throw err;
+      $scope.list_cards = data;
+
+      // check for checklists on each card
+      // TODO save checklist to db
+      _.each($scope.list_cards, function(card) {
+        if(card.idChecklists.length) {
+          get_checklist(card.idChecklists[0]);
+        }
+      });
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.list_cards ) {
+        for ( let i = 0; i < $scope.masterListObject.length; i++ ) {
+          $scope.masterListObject[i]['cards'] = [];
+          $scope.list_cards.forEach( function(card) {
+            if( $scope.masterListObject[i].id == card.idList ) {
+              $scope.masterListObject[i]['cards'].push(card);
+            }
+          });
+        }
+      }
+
+      // $scope.$apply();
+    });
+  };
+
+  // get checklist
+  let get_checklist = function( checklistID ) {
+    t.get("/1/checklists/" + checklistID, function(err, data) {
+      if (err) throw err;
+      // TODO assign checklist to list somehow
+      // ALSO! figure out local storage, lodash isnt great for boards obviously
+      $scope.check_lists = data;
+
+      $scope.$apply();
+    });
+  };
+
+  // update checklist item
+  $scope.updateChecklist = function(item, status, checklist) {
+    let checklistID = item.idChecklist;
+    let checkItemID = item.id;
+    let cardID = checklist.idCard;
+
+    if (status == 'markAsComplete') {
+      status = 'true';
+    }
+    else {
+      status = 'false';
+    }
+
+    // delete checklist item in Trello
+    t.put("/1/cards/" + cardID + "/checklist/" + checklistID + "/checkItem/" + checkItemID + "/state", { idChecklist : checklistID, idCheckItem : checkItemID, value : status}, function(err, data) {
+      if (err) throw err;
+      // TODO update view with new mark
+      get_checklist(checklistID);
+
+      // $scope.$apply();
+    });
+  };
+
+  // delete checklist item
+  $scope.deleteChecklistItem = function(item) {
+    let checklistID = item.idChecklist;
+    let checkItemID = item.id;
+
+    // delete checklist item in Trello
+    t.del("/1/checklists/" + checklistID + "/checkItems/" + checkItemID, { idCheckItem : checkItemID}, function(err, data) {
+      if (err) throw err;
+      // TODO update view with new mark
+      get_checklist(checklistID);
+    });
+  };
+
   // get lists
   let get_board_lists = function( boardID ) {
     t.get("/1/boards/" + boardID + "/lists", function(err, data) {
       if (err) throw err;
       $scope.board_lists = data;
-      console.log($scope.board_lists);
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.board_lists ) {
+        $scope.masterListObject = data;
+      }
+
+      get_list_cards( boardID );
+
       $scope.$apply();
     });
-  }
+  };
   get_board_lists( boardID );
 
-  // get cards
-  let get_list_cards = function( boardID ) {
-    t.get("/1/boards/" + boardID + "/cards", function(err, data) {
+  // move card
+  $scope.moveCard = function(event, index, item, type, external, destination) {
+    // list/card ID
+    let listID = destination.id;
+    let cardID = item.id;
+
+    // add new item to destination's card array
+    destination.cards.splice(index, 0, item);
+
+    $scope.$apply();
+
+    // update Trello first
+    t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
       if (err) throw err;
-      $scope.list_cards = data;
-      console.log($scope.list_cards);
-      $scope.$apply();
     });
-  }
-  get_list_cards( boardID );
-});
+
+    // return true so directive knows we are handling the move
+    return true;
+  };
+
+  // move list
+  $scope.moveList = function(event, index, item, type, external, destination) {
+    // list/card ID
+    let listID = item.id;
+
+    // add new item to destination's card array
+    destination.splice(index, 0, item);
+
+    $scope.$apply();
+
+    // update Trello first
+    t.put("/1/lists/" + listID, { pos : index }, function(err, data) {
+      if (err) throw err;
+    });
+
+    // return true so directive knows we are handling the move
+    return true;
+  };
+
+  // rename board/list/card
+  $scope.renameItem = function(itemType, itemId, newName) {
+    // update Trello with the new name
+    t.put("/1/" + itemType + "/" + itemId, { name : newName }, function(err, data) {
+      if (err) throw err;
+    });
+  };
+}]);
 
 // menu controller
-electrello.controller('MenuController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+electrello.controller('MenuController', ['$scope', '$route', '$routeParams', '$location', '$mdDialog', '$window', '$rootScope', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
     // set the body class
     $rootScope.pageClass = 'dashboard';
 
@@ -271,10 +400,10 @@ electrello.controller('MenuController', function($scope, $route, $routeParams, $
         db.get('profile_data').remove().value();
         console.log('deleted profile data');
     }
-});
+}]);
 
 // profile data controller
-electrello.controller('ProfileController', function ($scope) {
+electrello.controller('ProfileController', ['$scope', function ($scope) {
     // pass the profile info to the view
     let data = db.get('profile_data').take(1).value();
     $scope.profile_data = data[0].profile_data;
@@ -302,7 +431,7 @@ electrello.controller('ProfileController', function ($scope) {
             l++
         }
     }
-});
+}]);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -312,7 +441,7 @@ let authWindow;
 const authUrl = 'http://127.0.0.1:6080/login';
 
 // authorization stuffs
-electrello.controller('AuthController', function($scope, $location, $route, $routeParams, $window, $rootScope){
+electrello.controller('AuthController', ['$scope', '$location', '$route', '$routeParams', '$window', '$rootScope', function($scope, $location, $route, $routeParams, $window, $rootScope){
     // set the body class
     $rootScope.pageClass = 'authorize';
 
@@ -351,4 +480,4 @@ electrello.controller('AuthController', function($scope, $location, $route, $rou
           $window.location.reload();
       }
     }
-});
+}]);
