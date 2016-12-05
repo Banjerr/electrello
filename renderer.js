@@ -294,6 +294,34 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
   };
   get_board_lists( boardID );
 
+  // add new item
+  $scope.addCard = function() {
+    // TODO finish
+    // update Trello first
+    t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
+      if (err) throw err;
+    });
+  };
+
+  // add new item
+  $scope.addList = function(name) {
+    // TODO make dialog to get new list name
+
+    // add new list to Trello
+    t.put("/1/lists", { name : name, idBoard : boardID}, function(err, data) {
+      if (err) throw err;
+    });
+  }
+
+  // add new item
+  $scope.addChecklist = function() {
+    // TODO finish
+    // update Trello first
+    t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
+      if (err) throw err;
+    });
+  }
+
   // move card
   $scope.moveCard = function(event, index, item, type, external, destination) {
     // list/card ID
