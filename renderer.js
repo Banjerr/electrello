@@ -120,7 +120,8 @@ electrello.config(function($routeProvider) {
 });
 
 // dashboard controller
-electrello.controller('DashboardController', function($scope, $rootScope, $route, $location, $window, $mdDialog){
+electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', '$location', '$window', '$mdDialog',
+    function($scope, $rootScope, $route, $location, $window, $mdDialog){
     // get the updated list of boards
     let num_of_boards = db.get('board_names').size().value();
     $scope.board_names = db.get('board_names').take(num_of_boards).value();
@@ -163,10 +164,11 @@ electrello.controller('DashboardController', function($scope, $rootScope, $route
           console.log(data);
         });
     }
-});
+}]);
 
 // board controller
-electrello.controller('BoardController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$location', '$mdDialog', '$window', '$rootScope',
+    function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
   // get the id from the route
   let boardID = $routeParams.boardID;
   $scope.board_data = [];
@@ -351,7 +353,7 @@ electrello.controller('BoardController', function($scope, $route, $routeParams, 
 });
 
 // menu controller
-electrello.controller('MenuController', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
+electrello.controller('MenuController', ['$scope', '$route', '$routeParams', '$location', '$mdDialog', '$window', '$rootScope', function($scope, $route, $routeParams, $location, $mdDialog, $window, $rootScope){
     // set the body class
     $rootScope.pageClass = 'dashboard';
 
@@ -408,10 +410,10 @@ electrello.controller('MenuController', function($scope, $route, $routeParams, $
         db.get('profile_data').remove().value();
         console.log('deleted profile data');
     }
-});
+}]);
 
 // profile data controller
-electrello.controller('ProfileController', function ($scope) {
+electrello.controller('ProfileController', ['$scope', function ($scope) {
     // pass the profile info to the view
     let data = db.get('profile_data').take(1).value();
     $scope.profile_data = data[0].profile_data;
@@ -439,7 +441,7 @@ electrello.controller('ProfileController', function ($scope) {
             l++
         }
     }
-});
+}]);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -449,7 +451,7 @@ let authWindow;
 const authUrl = 'http://127.0.0.1:6080/login';
 
 // authorization stuffs
-electrello.controller('AuthController', function($scope, $location, $route, $routeParams, $window, $rootScope){
+electrello.controller('AuthController', ['$scope', '$location', '$route', '$routeParams', '$window', '$rootScope', function($scope, $location, $route, $routeParams, $window, $rootScope){
     // set the body class
     $rootScope.pageClass = 'authorize';
 
@@ -488,4 +490,4 @@ electrello.controller('AuthController', function($scope, $location, $route, $rou
           $window.location.reload();
       }
     }
-});
+}]);
