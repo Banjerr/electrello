@@ -1,4 +1,4 @@
-<article class="profile_data" ng-controller="ProfileController">
+<article class="profile_data">
     <h2 class="fullName">Howdy <span ng-if="profile_data.fullName">{{ profile_data.fullName }}</span> <span ng-if="profile_data.username">({{ profile_data.username }})</span></h2>
     <img ng-if="!(profile_data.gravatarHash | isEmpty)" src="https://www.gravatar.com/avatar/{{ profile_data.gravatarHash }}?s=150" alt="{{ profile_data.username }}" />
 

@@ -11,11 +11,12 @@ const {BrowserWindow} = require('electron').remote;
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
 const db = low('auth.json');
-const PouchDB = require('pouchdb');
-const boardDB = new PouchDB('board_db');
+const board_db = low('board.json');
+// default stuff for board_db
+board_db.defaults({ boards: [] }).value();
 
 // we need this to build the requests
-var request = require('request')
+var request = require('request');
 
 // underscore
 const _ = require('underscore');
@@ -26,9 +27,9 @@ let hasProfileData = db.get('profile_data').size().value();
 
 // get the access token from the db if hasAccessToken > 0
 if(hasAccessToken > 0){
-    // get the token and set it to a var
-    var access_token = db.get('access_token').take(1).value();
-    var trelloToken = access_token[0].access_token;
+  // get the token and set it to a var
+  var access_token = db.get('access_token').take(1).value();
+  var trelloToken = access_token[0].access_token;
 }
 
 // Trello stuff
@@ -122,21 +123,41 @@ electrello.config(function($routeProvider) {
 // dashboard controller
 electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', '$location', '$window', '$mdDialog',
     function($scope, $rootScope, $route, $location, $window, $mdDialog){
-    // get the updated list of boards
-    let num_of_boards = db.get('board_names').size().value();
-    $scope.board_names = db.get('board_names').take(num_of_boards).value();
+    // // get the updated list of boards
+    // let num_of_boards = db.get('board_names').size().value();
+    // $scope.board_names = db.get('board_names').take(num_of_boards).value();
+    var local_boards_length = board_db.get('boards').size().value();
+    var local_boards;
+    if (local_boards_length) {
+      local_boards = board_db.get('boards').take(local_boards_length).value();
+    }
+
+    // get user id from DB
+    let data = db.get('profile_data').take(1).value();
+    let userID = data[0].profile_data.id;
+
+    // get updated list of boards straight from Trello
+    t.get("/1/members/" + userID + "/boards", function(err, data) {
+      if (err) throw err;
+      $scope.board_names = data;
+      $scope.$apply();
+
+      // check to see if local matches Trello data
+      var board_up_to_date = _.isEqual(data, local_boards[0].data);
+
+      // if it doesnt match then update the local db
+      if (!board_up_to_date) {
+        board_db.get('boards')
+          .push({data})
+          .value();
+      }
+    });
 
     // show a board
     $scope.show_this_board = function( boardID ) {
         $rootScope.pageClass = 'board';
         $location.path('/board/' + boardID);
     }
-
-    // setting up some resources
-    // var Board = $resource('https://api.trello.com/1/boards/:board_id',
-    //     {board_id: @board, key: f4c23306bf38a3ec4ca351f999ee05d3, token: @token}, {
-    //
-    //     });
 
     // warn em before deleting anything
     $scope.showAlert = function(ev, boardID) {
@@ -224,7 +245,7 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
         }
       }
 
-      // $scope.$apply();
+      $scope.$apply();
     });
   };
 
@@ -259,7 +280,7 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
       // TODO update view with new mark
       get_checklist(checklistID);
 
-      // $scope.$apply();
+      $scope.$apply();
     });
   };
 
@@ -271,7 +292,6 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     // delete checklist item in Trello
     t.del("/1/checklists/" + checklistID + "/checkItems/" + checkItemID, { idCheckItem : checkItemID}, function(err, data) {
       if (err) throw err;
-      // TODO update view with new mark
       get_checklist(checklistID);
     });
   };
@@ -289,7 +309,7 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
 
       get_list_cards( boardID );
 
-      $scope.$apply();
+      // $scope.$apply();
     });
   };
   get_board_lists( boardID );
@@ -301,17 +321,17 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     let cardID = item.id;
 
     // add new item to destination's card array
-    destination.cards.splice(index, 0, item);
-
-    $scope.$apply();
+    // destination.cards.splice(index, 0, item);
 
     // update Trello first
     t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
       if (err) throw err;
-    });
 
-    // return true so directive knows we are handling the move
-    return true;
+      get_list_cards( boardID );
+
+      // return true so directive knows we are handling the move
+      return true;
+    });
   };
 
   // move list
@@ -319,18 +339,16 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     // list/card ID
     let listID = item.id;
 
-    // add new item to destination's card array
-    destination.splice(index, 0, item);
-
-    $scope.$apply();
-
     // update Trello first
     t.put("/1/lists/" + listID, { pos : index }, function(err, data) {
       if (err) throw err;
-    });
 
-    // return true so directive knows we are handling the move
-    return true;
+      // add new item to destination's card array
+      destination.splice(index, 0, item);
+
+      // return true so directive knows we are handling the move
+      return true;
+    });
   };
 
   // rename board/list/card
