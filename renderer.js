@@ -130,6 +130,7 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
     var local_boards;
     if (local_boards_length) {
       local_boards = board_db.get('boards').take(local_boards_length).value();
+      local_boards = local_boards[0].data;
     }
 
     // get user id from DB
@@ -143,7 +144,16 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
       $scope.$apply();
 
       // check to see if local matches Trello data
-      var board_up_to_date = _.isEqual(data, local_boards[0].data);
+      if (local_boards) {
+        var board_up_to_date = _.isEqual(data, local_boards);
+      }
+
+      console.log('local_boards');
+      console.log(local_boards);
+      console.log('data');
+      console.log(data);
+      console.log('board_up_to_date');
+      console.log(board_up_to_date);
 
       // if it doesnt match then update the local db
       if (!board_up_to_date) {
