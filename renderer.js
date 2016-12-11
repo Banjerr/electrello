@@ -10,13 +10,16 @@ const {BrowserWindow} = require('electron').remote;
 // db stuff
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
+// TODO rename this db to auth_db, now that we have multiple db files
 const db = low('auth.json');
 const board_db = low('board.json');
-// default stuff for board_db
+const card_db = low('card.json');
+// default stuff for board_db and card_db
 board_db.defaults({ boards: [] }).value();
+card_db.defaults({ cards: [] }).value();
 
 // we need this to build the requests
-var request = require('request');
+const request = require('request');
 
 // underscore
 const _ = require('underscore');
@@ -36,7 +39,7 @@ if(hasAccessToken > 0){
 var Trello = require("node-trello");
 const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
-// Define the electrello app module
+// Define the electrello app module and some config for angular material
 var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists', 'xeditable']).config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default').dark()
     .primaryPalette('red', {'default':'400'})
@@ -133,6 +136,8 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
       local_boards = local_boards[0].data;
     }
 
+    // TODO first show the local boards, and then check Trello to see if anythings updated, if so then reload $state and update the local db
+
     // get user id from DB
     let data = db.get('profile_data').take(1).value();
     let userID = data[0].profile_data.id;
@@ -147,13 +152,6 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
       if (local_boards) {
         var board_up_to_date = _.isEqual(data, local_boards);
       }
-
-      console.log('local_boards');
-      console.log(local_boards);
-      console.log('data');
-      console.log(data);
-      console.log('board_up_to_date');
-      console.log(board_up_to_date);
 
       // if it doesnt match then update the local db
       if (!board_up_to_date) {
@@ -207,11 +205,34 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
   $scope.list_cards = [];
   $scope.masterListObject = {};
 
+  // TODO check for existing board data / card data and load that
+  // meanwhile check Trello for anything new and if it doesnt match then reload $state with updated info and update the local db
+  //
+  // maybe store all cards by their board ID, if i can figure out a way to accomplish that?
+  var local_cards_length = card_db.get('cards').size().value();
+  var local_cards;
+  if (local_cards_length) {
+    local_cards = card_db.get('cards').take(local_cards_length).value();
+    local_cards = local_cards[0].data;
+  }
+
   // get some board data
   let get_board_data = function( boardID ) {
     t.get("/1/boards/" + boardID, function(err, data) {
       if (err) throw err;
       $scope.board_data = data;
+
+      // check to see if local matches Trello
+      if (local_cards) {
+        var card_up_to_date = _.isEqual(data, local_cards);
+      }
+
+      // if it doesnt match then update the local db
+      if (!card_up_to_date) {
+        card_db.get('cards')
+          .push({data})
+          .value();
+      }
 
       // set the background
       if ( data.prefs.backgroundColor != null ) {
