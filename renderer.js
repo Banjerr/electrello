@@ -417,6 +417,60 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
       if (err) throw err;
     });
   };
+
+  // open modal to get list name / details
+  $scope.newListModal = function(ev) {
+    // Appending dialog to document.body to cover sidenav in docs app
+    var title = $mdDialog.prompt()
+      .title('Add A New List')
+      .textContent('What will you name it?')
+      .placeholder('Trello List Name')
+      .ariaLabel('Trello List Name')
+      .initialValue('')
+      .targetEvent(ev)
+      .ok('Create!')
+      .cancel('Nevermind!');
+
+    $mdDialog.show(title).then(function(result) {
+      create_list(result);
+    }, function() {
+      console.log('cancelled');
+    });
+  }
+
+  // add a new list
+  let create_list = function(list_name) {
+    t.post("/1/lists/", { name: list_name, idBoard: boardID }, function(err, data) {
+      if (err) throw err;
+      console.log(data);
+    });
+  };
+
+  // open modal to get card name / details
+  $scope.newCardModal = function(ev, listID) {
+    $mdDialog.show({
+      locals: { listID: listID},
+      templateUrl: 'views/card-modal.ng.html',
+      clickOutsideToClose: true,
+      controller: ['$scope', 'listID', function($scope, listID) {
+        $scope.listID = listID;
+
+        // add a new card
+        $scope.create_card = function(card, listID) {
+          t.post("/1/cards/", { name: card.name, idList: listID, desc: card.desc }, function(err, data) {
+            if (err) throw err;
+            // after we make it, close it
+            $scope.closeDialog();
+          });
+        };
+
+        // close the dialog
+        $scope.closeDialog = function() {
+          $mdDialog.hide();
+        }
+      }]
+    });
+  };
 }]);
 
 // menu controller
