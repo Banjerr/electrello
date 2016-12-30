@@ -2,8 +2,95 @@
  /* FONTS *
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
-.bitter, * {
+.bitter {
     font-family: 'Bitter', serif !important;
+}
+
+/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ /* GLOBAL *
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+
+.editable-hide {
+  display: none !important;
+}
+
+.editable-wrap {
+  .editable-buttons {
+    button {
+      display: inline-block;
+      margin: 0 0 0 14px;
+      text-transform: capitalize;
+      font-family: 'Bitter', serif !important;
+    }
+  }
+
+  input {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    box-shadow: none;
+    font-family: 'Bitter', serif !important;
+  }
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.block {
+  display: block;
+}
+
+.mb10 {
+  margin-bottom: 10px;
+}
+
+.mb15 {
+  margin-bottom: 15px;
+}
+
+.mr15 {
+  margin-right: 15px;
+}
+
+.mr10 {
+  margin-right: 10px;
+}
+
+.ml15 {
+  margin-left: 15px;
+}
+
+.ml10 {
+  margin-left: 10px;
+}
+
+.mt15 {
+  margin-top: 15px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.m15 {
+  margin: 15px;  
+}
+
+.m10 {
+  margin: 10px;
 }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -44,6 +131,19 @@ header {
 }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ /* DASHBOARD VIEW *
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+
+.dashboard {
+  article.dashboard {
+    .closed {
+      pointer-events: none;
+      opacity: .50;
+    }
+  }
+}
+
+/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  /* BOARD VIEW *
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
@@ -53,13 +153,37 @@ header {
   padding: 1% 0;
 
   .boardView {
+    // editable styles for board name
+    header {
+      text-align: left;
+      h2 {
+        font-size: 1.5em;
+        padding-top: 0.83em;
+        padding-bottom: 0.83em;
+      }
+      .editable-wrap:first-of-type {
+        input {
+          font-size: 1.5em;
+          padding-top: 0.83em;
+          padding-bottom: 0.83em;
+          font-weight: 700;
+        }
+      }
+    }
+
     ul[dnd-list], ul[dnd-list] > li {
       position: relative;
+    }
+
+    .dndDraggingSource {
+      display: none;
     }
 
     ul {
       margin: 0;
       padding: 0;
+      transition: all .2s ease;
+      min-height: 42px;
 
       li {
         display: inline-block;
@@ -68,8 +192,22 @@ header {
         background: gray;
         padding: 1%;
         margin: 0 1% 2%;
+        transition: all .2s ease;
+
+        .editable-wrap {
+
+          &:first-of-type {
+            input {
+              font-size: 1.17em;
+              padding-top: 1em;
+              padding-bottom: 1em;
+              font-weight: 700;
+            }
+          }
+        }
 
         ul {
+          transition: all .2s ease;
 
           li {
             display: block;
@@ -77,6 +215,19 @@ header {
             margin: 4% 0;
             padding: 3%;
             width: 94%;
+            transition: all .2s ease;
+
+            .editable-wrap {
+
+              &:first-of-type {
+                input {
+                  font-size: 16px;
+                  padding-top: 1em;
+                  padding-bottom: 1em;
+                  font-weight: 700;
+                }
+              }
+            }
           }
         }
       }

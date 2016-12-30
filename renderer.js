@@ -10,10 +10,19 @@ const {BrowserWindow} = require('electron').remote;
 // db stuff
 const low = require('lowdb');
 const storage = require('lowdb/lib/file-sync');
+// TODO rename this db to auth_db, now that we have multiple db files
 const db = low('auth.json');
+const board_db = low('board.json');
+const card_db = low('card.json');
+// default stuff for board_db and card_db
+board_db.defaults({ boards: [] }).value();
+card_db.defaults({ cards: [] }).value();
 
 // we need this to build the requests
-var request = require('request')
+const request = require('request');
+
+// underscore
+const _ = require('underscore');
 
 // get the size of db entries
 let hasAccessToken = db.get('access_token').size().value();
@@ -21,17 +30,17 @@ let hasProfileData = db.get('profile_data').size().value();
 
 // get the access token from the db if hasAccessToken > 0
 if(hasAccessToken > 0){
-    // get the token and set it to a var
-    var access_token = db.get('access_token').take(1).value();
-    var trelloToken = access_token[0].access_token;
+  // get the token and set it to a var
+  var access_token = db.get('access_token').take(1).value();
+  var trelloToken = access_token[0].access_token;
 }
 
 // Trello stuff
 var Trello = require("node-trello");
 const t = new Trello("f4c23306bf38a3ec4ca351f999ee05d3", trelloToken);
 
-// Define the electrello app module
-var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists']).config(function($mdThemingProvider) {
+// Define the electrello app module and some config for angular material
+var electrello = angular.module('electrello', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngResource', 'dndLists', 'xeditable']).config(function($mdThemingProvider) {
   $mdThemingProvider.theme('default').dark()
     .primaryPalette('red', {'default':'400'})
     .accentPalette('yellow', {'default':'500'});
@@ -117,21 +126,46 @@ electrello.config(function($routeProvider) {
 // dashboard controller
 electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', '$location', '$window', '$mdDialog',
     function($scope, $rootScope, $route, $location, $window, $mdDialog){
-    // get the updated list of boards
-    let num_of_boards = db.get('board_names').size().value();
-    $scope.board_names = db.get('board_names').take(num_of_boards).value();
+    // // get the updated list of boards
+    // let num_of_boards = db.get('board_names').size().value();
+    // $scope.board_names = db.get('board_names').take(num_of_boards).value();
+    var local_boards_length = board_db.get('boards').size().value();
+    var local_boards;
+    if (local_boards_length) {
+      local_boards = board_db.get('boards').take(local_boards_length).value();
+      local_boards = local_boards[0].data;
+    }
+
+    // TODO first show the local boards, and then check Trello to see if anythings updated, if so then reload $state and update the local db
+
+    // get user id from DB
+    let data = db.get('profile_data').take(1).value();
+    let userID = data[0].profile_data.id;
+
+    // get updated list of boards straight from Trello
+    t.get("/1/members/" + userID + "/boards", function(err, data) {
+      if (err) throw err;
+      $scope.board_names = data;
+      $scope.$apply();
+
+      // check to see if local matches Trello data
+      if (local_boards) {
+        var board_up_to_date = _.isEqual(data, local_boards);
+      }
+
+      // if it doesnt match then update the local db
+      if (!board_up_to_date) {
+        board_db.get('boards')
+          .push({data})
+          .value();
+      }
+    });
 
     // show a board
     $scope.show_this_board = function( boardID ) {
         $rootScope.pageClass = 'board';
         $location.path('/board/' + boardID);
     }
-
-    // setting up some resources
-    // var Board = $resource('https://api.trello.com/1/boards/:board_id',
-    //     {board_id: @board, key: f4c23306bf38a3ec4ca351f999ee05d3, token: @token}, {
-    //
-    //     });
 
     // warn em before deleting anything
     $scope.showAlert = function(ev, boardID) {
@@ -158,7 +192,35 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
           if (err) throw err;
           console.log(data);
         });
+    };
+
+    // open modal to get board name / details
+    $scope.newBoardModal = function(ev) {
+      // Appending dialog to document.body to cover sidenav in docs app
+      var title = $mdDialog.prompt()
+        .title('Add A New Board')
+        .textContent('What will you name it?')
+        .placeholder('Trello Board Name')
+        .ariaLabel('Trello Board Name')
+        .initialValue('')
+        .targetEvent(ev)
+        .ok('Create!')
+        .cancel('Nevermind!');
+
+      $mdDialog.show(title).then(function(result) {
+        create_board(result);
+      }, function() {
+        console.log('cancelled');
+      });
     }
+
+    // add a new board
+    let create_board = function(board_name) {
+      t.post("/1/boards/", { name: board_name }, function(err, data) {
+        if (err) throw err;
+        console.log(data);
+      });
+    };
 }]);
 
 // board controller
@@ -168,13 +230,37 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
   let boardID = $routeParams.boardID;
   $scope.board_data = [];
   $scope.board_lists = [];
+  $scope.list_cards = [];
+  $scope.masterListObject = {};
+
+  // TODO check for existing board data / card data and load that
+  // meanwhile check Trello for anything new and if it doesnt match then reload $state with updated info and update the local db
+  //
+  // maybe store all cards by their board ID, if i can figure out a way to accomplish that?
+  var local_cards_length = card_db.get('cards').size().value();
+  var local_cards;
+  if (local_cards_length) {
+    local_cards = card_db.get('cards').take(local_cards_length).value();
+    local_cards = local_cards[0].data;
+  }
 
   // get some board data
   let get_board_data = function( boardID ) {
     t.get("/1/boards/" + boardID, function(err, data) {
       if (err) throw err;
       $scope.board_data = data;
-      console.log($scope.board_data);
+
+      // check to see if local matches Trello
+      if (local_cards) {
+        var card_up_to_date = _.isEqual(data, local_cards);
+      }
+
+      // if it doesnt match then update the local db
+      if (!card_up_to_date) {
+        card_db.get('cards')
+          .push({data})
+          .value();
+      }
 
       // set the background
       if ( data.prefs.backgroundColor != null ) {
@@ -192,27 +278,209 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
   }
   get_board_data( boardID );
 
+  // get cards
+  let get_list_cards = function( boardID ) {
+    t.get("/1/boards/" + boardID + "/cards", { fields : 'all', stickers : true, sticker_fields : 'all' },function(err, data) {
+      if (err) throw err;
+      $scope.list_cards = data;
+
+      // check for checklists on each card
+      // TODO save checklist to db
+      _.each($scope.list_cards, function(card) {
+        if(card.idChecklists.length) {
+          get_checklist(card.idChecklists[0]);
+        }
+      });
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.list_cards ) {
+        for ( let i = 0; i < $scope.masterListObject.length; i++ ) {
+          $scope.masterListObject[i]['cards'] = [];
+          $scope.list_cards.forEach( function(card) {
+            if( $scope.masterListObject[i].id == card.idList ) {
+              $scope.masterListObject[i]['cards'].push(card);
+            }
+          });
+        }
+      }
+
+      $scope.$apply();
+    });
+  };
+
+  // get checklist
+  let get_checklist = function( checklistID ) {
+    t.get("/1/checklists/" + checklistID, function(err, data) {
+      if (err) throw err;
+      // TODO assign checklist to list somehow
+      // ALSO! figure out local storage, lodash isnt great for boards obviously
+      $scope.check_lists = data;
+
+      $scope.$apply();
+    });
+  };
+
+  // update checklist item
+  $scope.updateChecklist = function(item, status, checklist) {
+    let checklistID = item.idChecklist;
+    let checkItemID = item.id;
+    let cardID = checklist.idCard;
+
+    if (status == 'markAsComplete') {
+      status = 'true';
+    }
+    else {
+      status = 'false';
+    }
+
+    // delete checklist item in Trello
+    t.put("/1/cards/" + cardID + "/checklist/" + checklistID + "/checkItem/" + checkItemID + "/state", { idChecklist : checklistID, idCheckItem : checkItemID, value : status}, function(err, data) {
+      if (err) throw err;
+      // TODO update view with new mark
+      get_checklist(checklistID);
+
+      $scope.$apply();
+    });
+  };
+
+  // delete checklist item
+  $scope.deleteChecklistItem = function(item) {
+    let checklistID = item.idChecklist;
+    let checkItemID = item.id;
+
+    // delete checklist item in Trello
+    t.del("/1/checklists/" + checklistID + "/checkItems/" + checkItemID, { idCheckItem : checkItemID}, function(err, data) {
+      if (err) throw err;
+      get_checklist(checklistID);
+    });
+  };
+
   // get lists
   let get_board_lists = function( boardID ) {
     t.get("/1/boards/" + boardID + "/lists", function(err, data) {
       if (err) throw err;
       $scope.board_lists = data;
-      console.log($scope.board_lists);
-      $scope.$apply();
+
+      // build an object that the dragndrop directive handles better
+      if ( $scope.board_lists ) {
+        $scope.masterListObject = data;
+      }
+
+      get_list_cards( boardID );
+
+      // $scope.$apply();
     });
-  }
+  };
   get_board_lists( boardID );
 
-  // get cards
-  let get_list_cards = function( boardID ) {
-    t.get("/1/boards/" + boardID + "/cards", function(err, data) {
+  // move card
+  $scope.moveCard = function(event, index, item, type, external, destination) {
+    // list/card ID
+    let listID = destination.id;
+    let cardID = item.id;
+
+    // add new item to destination's card array
+    destination.cards.splice(index, 0, item);
+
+    // update Trello first
+    t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
       if (err) throw err;
-      $scope.list_cards = data;
-      console.log($scope.list_cards);
-      $scope.$apply();
+
+      // get_list_cards( boardID );
+    });
+
+    // return item so directive knows to insert into new list
+    return true;
+  };
+
+  // move list
+  $scope.moveList = function(event, index, item, type, external) {
+    // list/card ID
+    let listID = item.id;
+
+    // add new item to destination's card array
+    // $scope.masterListObject.splice(index, 0, item);
+
+    // update Trello first
+    t.put("/1/lists/" + listID, { pos : index }, function(err, data) {
+      if (err) throw err;
+
+    });
+
+    // return true so directive knows we are handling the move
+    return item;
+  };
+
+  // rename board/list/card/description
+  $scope.renameItem = function(itemType, itemId, newName) {
+    // update description
+    if (itemType == 'description') {
+      // update Trello with the new description
+      t.put("/1/cards/" + itemId + "/desc", { value : newName }, function(err, data) {
+        if (err) throw err;
+      });
+    }
+    else {
+      // update Trello with the new name
+      t.put("/1/" + itemType + "/" + itemId, { name : newName }, function(err, data) {
+        if (err) throw err;
+      });
+    }
+  };
+
+  // open modal to get list name / details
+  $scope.newListModal = function(ev) {
+    // Appending dialog to document.body to cover sidenav in docs app
+    var title = $mdDialog.prompt()
+      .title('Add A New List')
+      .textContent('What will you name it?')
+      .placeholder('Trello List Name')
+      .ariaLabel('Trello List Name')
+      .initialValue('')
+      .targetEvent(ev)
+      .ok('Create!')
+      .cancel('Nevermind!');
+
+    $mdDialog.show(title).then(function(result) {
+      create_list(result);
+    }, function() {
+      console.log('cancelled');
     });
   }
-  get_list_cards( boardID );
+
+  // add a new list
+  let create_list = function(list_name) {
+    t.post("/1/lists/", { name: list_name, idBoard: boardID }, function(err, data) {
+      if (err) throw err;
+      console.log(data);
+    });
+  };
+
+  // open modal to get card name / details
+  $scope.newCardModal = function(ev, listID) {
+    $mdDialog.show({
+      locals: { listID: listID},
+      templateUrl: 'views/card-modal.ng.html',
+      clickOutsideToClose: true,
+      controller: ['$scope', 'listID', function($scope, listID) {
+        $scope.listID = listID;
+
+        // add a new card
+        $scope.create_card = function(card, listID) {
+          t.post("/1/cards/", { name: card.name, idList: listID, desc: card.desc }, function(err, data) {
+            if (err) throw err;
+            // after we make it, close it
+            $scope.closeDialog();
+          });
+        };
+
+        // close the dialog
+        $scope.closeDialog = function() {
+          $mdDialog.hide();
+        }
+      }]
+    });
+  };
 }]);
 
 // menu controller

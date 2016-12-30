@@ -1,0 +1,18 @@
+<md-dialog aria-label="new-card">
+  <div layout-padding layout="column">
+    <md-dialog-container>
+      <md-input-container>
+        <label>Card Name</label>
+        <input ng-model="card.name">
+      </md-input-container>
+      <md-input-container>
+        <label>Card Description</label>
+        <textarea placeholder="(Optional)" ng-model="card.desc"></textarea>
+      </md-input-container>
+    </md-dialog-container>
+    <md-dialog-actions>
+      <md-button ng-click="create_card(card, listID)" class="md-primary">Create Card</md-button>
+      <md-button ng-click="closeDialog()" class="md-primary">Cancel</md-button>
+    </md-dialog-actions>
+  </div>
+</md-dialog>

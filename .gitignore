@@ -1,2 +1,5 @@
 node_modules/
 auth.json
+board.json
+card.json
+.DS_Store

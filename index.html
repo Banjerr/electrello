@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
     <link rel="stylesheet" href="styles/styles.css" charset="utf-8">
   </head>
-  <body class="{{ pageClass }}" id="popupContainer">
+  <body class="{{ pageClass }} bitter" id="popupContainer">
       <header>
           <section class="profileSettings" ng-controller="MenuController">
               <md-menu>
@@ -48,6 +48,10 @@
           </section>
 
           <h2><md-icon md-svg-icon="view-dashboard"></md-icon> ElecTrello</h2>
+
+          <section class="pull-right m10" ng-if="pageClass == 'dashboard'">
+            <span ng-click="newBoardModal($event)"><i class="fa fa-plus"></i> New Board</span>
+          </section>
       </header>
 
       <!-- <section ng-if="!board_background_color" class="electrelloBody" ng-view ng-style="{'background-image':'url(' + board_background_image + ')'}"></section>
@@ -69,5 +73,8 @@
     require('./node_modules/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js');
     // app stuff
     require('./renderer.js');
+    require('./bower_components/angular-xeditable/dist/js/xeditable.js');
+    // underscores
+    require('./js/underscore-min.js');
   </script>
 </html>

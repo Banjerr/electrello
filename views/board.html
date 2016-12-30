@@ -1,20 +1,52 @@
-<article class="boardView" ng-controller="BoardController">
-  <h2>{{board_data.name}}</h2>
-  <ul dnd-list="board_lists">
-    <li ng-repeat="board_list in board_lists"
-    dnd-draggable="board_list"
+<article class="boardView">
+  <header>
+    <h2 editable-text="board_data.name" onbeforesave="renameItem('boards', board_data.id, $data)">{{board_data.name}}</h2>
+    <span class="pull-right" ng-click="newListModal()">New List</span>
+  </header>
+
+  <ul dnd-list="masterListObject"
+  dnd-external-sources="true"
+  dnd-allowed-types="['containerType']"
+  dnd-drop="moveList(event, index, item, type, external, masterListObject)">
+    <li ng-repeat="list in masterListObject"
+    dnd-draggable="list"
     dnd-effect-allowed="move"
-    dnd-moved="board_lists.splice($index, 1)"
-    dnd-selected=""
-    ng-class="">
-      {{board_list.name}}
-      <ul dnd-list="list_cards">
-        <li ng-repeat="list_card in list_cards | filter: {idList: board_list.id}" dnd-draggable="board_lists"
+    dnd-type="'containerType'"
+    dnd-moved="masterListObject.splice($index, 1)">
+      <h3 class="inline" editable-text="list.name" onbeforesave="renameItem('lists', list.id, $data)">{{list.name}}</h3>
+      <span ng-click="newCardModal(event, list.id)" class="pull-right"><i class="fa fa-plus"></i> New Card</span>
+      <ul dnd-list="list"
+      dnd-allowed-types="['itemType']"
+      dnd-horizontal-list="true"
+      dnd-external-sources="true"
+      dnd-drop="moveCard(event, index, item, type, external, list)">
+        <li ng-repeat="card in list.cards"
+        dnd-draggable="card"
         dnd-effect-allowed="move"
-        dnd-moved="list_cards.splice($index, 1)"
-        dnd-selected=""
-        ng-class="">
-          {{list_card.name}}
+        dnd-moved="list.cards.splice($index, 1);"
+        dnd-type="'itemType'">
+          <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
+              <md-card-title>
+                <md-card-title-text>
+                  <h4 editable-text="card.name" onbeforesave="renameItem('cards', card.id, $data)">{{card.name}}</h4>
+                </md-card-title-text>
+                <md-card-title-media ng-if="card.stickers.length" ng-repeat="sticker in card.stickers">
+                  <div class="md-media-lg card-media"><img ng-src="{{sticker.imageUrl}}"/></div>
+                </md-card-title-media>
+              </md-card-title>
+              <md-card-content>
+                <p editable-textarea="card.desc" onbeforesave="renameItem('description', card.id, $data)" ng-show="card.desc">{{card.desc}}</p>
+                <ul ng-show="card.idChecklists.length">
+                  <li ng-repeat="item in check_lists.checkItems">
+                    <span><i ng-click="updateChecklist(item, 'markAsIncomplete', check_lists)" class="fa fa-check-square-o" ng-show="item.state == 'complete'"></i><i ng-show="item.state != 'complete'" ng-click="updateChecklist(item, 'markAsComplete', check_lists)" class="fa fa-square-o"></i> </span>{{item.name}} <span class="pull-right" ng-click="deleteChecklistItem(item)"><i class="fa fa-trash-o"></i></span>
+                  </li>
+                </ul>
+              </md-card-content>
+              <md-card-actions layout="row" layout-align="end center">
+                <md-button class="md-raised" ng-click="">Delete Card</md-button>
+                <md-button ng-click="">Close Card</md-button>
+              </md-card-actions>
+          </md-card>
         </li>
       </ul>
     </li>
