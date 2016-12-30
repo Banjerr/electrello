@@ -411,12 +411,21 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     return item;
   };
 
-  // rename board/list/card
+  // rename board/list/card/description
   $scope.renameItem = function(itemType, itemId, newName) {
-    // update Trello with the new name
-    t.put("/1/" + itemType + "/" + itemId, { name : newName }, function(err, data) {
-      if (err) throw err;
-    });
+    // update description
+    if (itemType == 'description') {
+      // update Trello with the new description
+      t.put("/1/cards/" + itemId + "/desc", { value : newName }, function(err, data) {
+        if (err) throw err;
+      });
+    }
+    else {
+      // update Trello with the new name
+      t.put("/1/" + itemType + "/" + itemId, { name : newName }, function(err, data) {
+        if (err) throw err;
+      });
+    }
   };
 
   // open modal to get list name / details

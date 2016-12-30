@@ -11,7 +11,7 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 .editable-hide {
-  display: none;
+  display: none !important;
 }
 
 .editable-wrap {
@@ -51,6 +51,46 @@
 
 .block {
   display: block;
+}
+
+.mb10 {
+  margin-bottom: 10px;
+}
+
+.mb15 {
+  margin-bottom: 15px;
+}
+
+.mr15 {
+  margin-right: 15px;
+}
+
+.mr10 {
+  margin-right: 10px;
+}
+
+.ml15 {
+  margin-left: 15px;
+}
+
+.ml10 {
+  margin-left: 10px;
+}
+
+.mt15 {
+  margin-top: 15px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.m15 {
+  margin: 15px;  
+}
+
+.m10 {
+  margin: 10px;
 }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
