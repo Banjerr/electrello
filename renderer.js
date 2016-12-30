@@ -192,7 +192,35 @@ electrello.controller('DashboardController', ['$scope', '$rootScope', '$route', 
           if (err) throw err;
           console.log(data);
         });
+    };
+
+    // open modal to get board name / details
+    $scope.newBoardModal = function(ev) {
+      // Appending dialog to document.body to cover sidenav in docs app
+      var title = $mdDialog.prompt()
+        .title('Add A New Board')
+        .textContent('What will you name it?')
+        .placeholder('Trello Board Name')
+        .ariaLabel('Trello Board Name')
+        .initialValue('')
+        .targetEvent(ev)
+        .ok('Create!')
+        .cancel('Nevermind!');
+
+      $mdDialog.show(title).then(function(result) {
+        create_board(result);
+      }, function() {
+        console.log('cancelled');
+      });
     }
+
+    // add a new board
+    let create_board = function(board_name) {
+      t.post("/1/boards/", { name: board_name }, function(err, data) {
+        if (err) throw err;
+        console.log(data);
+      });
+    };
 }]);
 
 // board controller
