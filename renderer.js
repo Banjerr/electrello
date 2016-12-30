@@ -380,34 +380,35 @@ electrello.controller('BoardController', ['$scope', '$route', '$routeParams', '$
     let cardID = item.id;
 
     // add new item to destination's card array
-    // destination.cards.splice(index, 0, item);
+    destination.cards.splice(index, 0, item);
 
     // update Trello first
     t.put("/1/cards/" + cardID, { idList : listID, pos : index }, function(err, data) {
       if (err) throw err;
 
-      get_list_cards( boardID );
-
-      // return true so directive knows we are handling the move
-      return true;
+      // get_list_cards( boardID );
     });
+
+    // return item so directive knows to insert into new list
+    return true;
   };
 
   // move list
-  $scope.moveList = function(event, index, item, type, external, destination) {
+  $scope.moveList = function(event, index, item, type, external) {
     // list/card ID
     let listID = item.id;
+
+    // add new item to destination's card array
+    // $scope.masterListObject.splice(index, 0, item);
 
     // update Trello first
     t.put("/1/lists/" + listID, { pos : index }, function(err, data) {
       if (err) throw err;
 
-      // add new item to destination's card array
-      destination.splice(index, 0, item);
-
-      // return true so directive knows we are handling the move
-      return true;
     });
+
+    // return true so directive knows we are handling the move
+    return item;
   };
 
   // rename board/list/card
