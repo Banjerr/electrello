@@ -26,10 +26,11 @@ const _ = require('underscore');
 
 // get the size of db entries
 let hasAccessToken = db.get('access_token').size().value();
+console.log(hasAccessToken);
 let hasProfileData = db.get('profile_data').size().value();
 
 // get the access token from the db if hasAccessToken > 0
-if(hasAccessToken > 0){
+if(hasAccessToken){
   // get the token and set it to a var
   var access_token = db.get('access_token').take(1).value();
   var trelloToken = access_token[0].access_token;
@@ -75,7 +76,7 @@ electrello.config(function($routeProvider) {
         resolve : {
             "check" : function($location) {
                 // if they've got an access token we're good
-                if(hasAccessToken > 0) {
+                if(hasAccessToken) {
                     // Send em to the dashboard
                     $location.path('/dashboard');
                 } else {
@@ -91,7 +92,7 @@ electrello.config(function($routeProvider) {
         resolve : {
             "check" : function($location) {
                 // if they've got an access token we're good
-                if(hasAccessToken < 0) {
+                if(!hasAccessToken) {
                     // Send em home to authorize
                     $location.path('/');
                 } else {
@@ -107,7 +108,8 @@ electrello.config(function($routeProvider) {
         resolve : {
             "check" : function($location) {
                 // if they've got an access token we're good
-                if(hasAccessToken < 0) {
+                if(!hasAccessToken) {
+
                     // Send em home to authorize
                     $location.path('/');
                 } else {
@@ -510,6 +512,9 @@ electrello.controller('MenuController', ['$scope', '$route', '$routeParams', '$l
     // delete the tokens
     $scope.delete_token = function() {
       db.get('access_token').remove().value();
+      db.get('profile_data').remove().value();
+      board_db.get('boards').remove().value();
+      card_db.get('cards').remove().value();
       console.log('deleted token');
     }
 
