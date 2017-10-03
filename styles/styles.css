@@ -6,7 +6,10 @@
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  /* GLOBAL *
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+body{
+  background-color: rgb(48,48,48);
+}
 .editable-hide {
   display: none !important; }
 
@@ -75,7 +78,7 @@ header {
   text-align: center; }
   header .profileSettings {
     position: absolute;
-    top: 0;
+    top: 20px;
     left: 0; }
   header h2 {
     display: inline-block;
