@@ -39,6 +39,7 @@
     "angular-messages": "^1.5.7",
     "angular-resource": "^1.5.7",
     "angular-route": "^1.5.7",
+    "electron-window-state": "^5.0.2",
     "file-sync": "^0.0.2",
     "fs": "0.0.1-security",
     "jquery": "^3.0.0",
