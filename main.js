@@ -1,4 +1,5 @@
 const electron = require('electron')
+const windowState = require('electron-window-state')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -9,8 +10,28 @@ const BrowserWindow = electron.BrowserWindow
 let mainWindow
 
 function createWindow () {
+  const workAreaSize = electron.screen.getPrimaryDisplay().workAreaSize
+  // Load the previous state with fall-back to defaults
+  const mainWindowState = windowState({
+    defaultWidth: workAreaSize.width - 200,
+    defaultHeight: workAreaSize.height - 100,
+  })
+
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600, titleBarStyle: 'hidden'})
+  mainWindow = new BrowserWindow({
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
+    titleBarStyle: 'hidden'
+  })
+
+  /**
+   * Let us register listeners on the window, so we can update the state
+   * automatically (the listeners will be removed when the window is closed)
+   * and restore the maximized or full screen state
+   */
+  mainWindowState.manage(mainWindow)
 
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/index.html`)
